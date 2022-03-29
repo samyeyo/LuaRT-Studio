@@ -28,11 +28,11 @@ return {
   end,
   
   stringtable = {
-    editor = "ZeroBrane Studio",
-    about = "About ZeroBrane Studio",
-    editormessage = "ZeroBrane Studio Message",
-    statuswelcome = "Welcome to ZeroBrane Studio",
-    settingsapp = "ZeroBraneStudio",
+    editor = "LuaRT Studio",
+    about = "About LuaRT Studio",
+    editormessage = "LuaRT Studio Message",
+    statuswelcome = "Welcome to LuaRT Studio",
+    settingsapp = "LuaRTStudio",
     settingsvendor = "ZeroBraneLLC",
     logo = "res/zerobrane.png",
     help = "zerobranestudio",

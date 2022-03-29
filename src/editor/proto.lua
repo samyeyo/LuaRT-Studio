@@ -68,7 +68,12 @@ ide.proto.Document = {__index = {
   end,
   SetActive = function(self)
     if not self.editor then return false end
-
+    local ext = GetFileExt(self:GetFilePath())
+    if ext == "wlua" and ide.interpreter.name == "console" then
+      ProjectSetInterpreter("desktop")
+    elseif ext == "lua" and ide.interpreter.name == "desktop" then
+      ProjectSetInterpreter("console")
+    end
     local index, notebook = self:GetTabIndex()
     if index and notebook:GetSelection() ~= index then notebook:SetSelection(index) end
 

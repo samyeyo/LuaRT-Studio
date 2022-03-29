@@ -262,7 +262,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   end
 
   -- launch process
-  local params = wx.wxEXEC_ASYNC + wx.wxEXEC_MAKE_GROUP_LEADER + (nohide and wx.wxEXEC_NOHIDE or 0)
+  local params = wx.wxEXEC_ASYNC + wx.wxEXEC_MAKE_GROUP_LEADER + wx.wxEXEC_NOHIDE 
   local pid = wx.wxExecute(cmd, params, proc)
 
   if oldcwd then wx.wxFileName.SetCwd(oldcwd) end
@@ -286,7 +286,9 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   local streamout = proc and proc:GetOutputStream()
   if streamout then streamouts[pid] = {stream=streamout, callback=stringcallback, out=true} end
 
-  unHideWindow(pid)
+  if not nohide then
+    unHideWindow(pid)
+  end
   nameTab(out, TR("Output (running)"))
 
   return pid

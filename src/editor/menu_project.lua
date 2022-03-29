@@ -40,7 +40,7 @@ local debugMenu = ide:MakeMenu {
   { ID_CLEAROUTPUTENABLE, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUTENABLE), TR("Clear the output window before compiling or debugging"), wx.wxITEM_CHECK },
   { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS), TR("Provide command line parameters") },
   { ID_PROJECTDIR, TR("Project Directory"), TR("Set the project directory to be used"), targetDirMenu },
-  { ID_INTERPRETER, TR("Lua &Interpreter"), TR("Set the interpreter to be used"), targetMenu },
+  -- { ID_INTERPRETER, TR("LuaRT interpreter"), TR("Set the interpreter to be used"), targetMenu },
 }
 menuBar:Append(debugMenu, TR("&Project"))
 menuBar:Check(ID_CLEAROUTPUTENABLE, true)
@@ -57,12 +57,12 @@ local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true
 
 local interpreters
 local function selectInterpreter(id)
-  for id in pairs(interpreters) do
-    menuBar:Check(id, false)
-    menuBar:Enable(id, true)
-  end
-  menuBar:Check(id, true)
-  menuBar:Enable(id, false)
+  -- for id in pairs(interpreters) do
+  --   menuBar:Check(id, false)
+  --   menuBar:Enable(id, true)
+  -- end
+  -- menuBar:Check(id, true)
+  -- menuBar:Enable(id, false)
 
   local changed = ide.interpreter ~= interpreters[id]
   if changed then
@@ -107,10 +107,10 @@ function ProjectUpdateInterpreters()
   assert(ide.interpreters, "no interpreters defined")
 
   -- delete all existing items (if any)
-  local items = targetMenu:GetMenuItemCount()
-  for i = items, 1, -1 do
-    targetMenu:Delete(targetMenu:FindItemByPosition(i-1))
-  end
+  -- local items = targetMenu:GetMenuItemCount()
+  -- for i = items, 1, -1 do
+  --   targetMenu:Delete(targetMenu:FindItemByPosition(i-1))
+  -- end
 
   local names = {}
   for file in pairs(ide.interpreters) do table.insert(names, file) end
@@ -122,9 +122,9 @@ function ProjectUpdateInterpreters()
     local id = ID("debug.interpreter."..file)
     inter.fname = file
     interpreters[id] = inter
-    targetMenu:Append(
-      wx.wxMenuItem(targetMenu, id, inter.name, inter.description, wx.wxITEM_CHECK))
-    frame:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, evSelectInterpreter)
+    -- targetMenu:Append(
+    --   wx.wxMenuItem(targetMenu, id, inter.name, inter.description, wx.wxITEM_CHECK))
+    -- frame:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, evSelectInterpreter)
   end
 
   local id = (
