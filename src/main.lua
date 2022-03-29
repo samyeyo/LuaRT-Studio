@@ -49,7 +49,7 @@ require("wx")
 if not bit then require("bit") end
 require("mobdebug")
 if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
-
+wx.wxSplashScreen(wx.wxBitmap("zbstudio/res/zerobrane.png"), wx.wxSPLASH_CENTRE_ON_SCREEN + wx.wxSPLASH_TIMEOUT, 1000, wx.NULL, wx.wxID_ANY)
 dofile "src/util.lua"
 
 -----------
