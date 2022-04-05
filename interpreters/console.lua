@@ -8,7 +8,7 @@ local function exePath(self, version)
 end
 
 return {
-    name = "console",
+    name = "LuaRT Console",
     description = ("LuaRT console interpreter with debugger"),
     api = {"baselib"},
     luaversion = version,
