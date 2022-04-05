@@ -31,11 +31,13 @@ local function getIcon(name, isdir)
   local ext = GetFileExt(name)
   local extmap = ide.filetree.extmap
   local known = extmap[ext] or ide:FindSpec(ext)
-  if known and not extmap[ext] then
-    local iconmap = ide.config.filetree.iconmap
-    extmap[ext] = iconmap and ide.filetree.imglist:Add(ide:CreateFileIcon(ext)) or image.FILEKNOWN
+  if not extmap[ext] then    
+    local bmp = ide:CreateFileIcon(ext) or false
+    if bmp then
+      extmap[ext] = ide.filetree.imglist:Add(bmp)
+    end
   end
-  local icon = isdir and image.DIRECTORY or known and extmap[ext] or image.FILEOTHER
+  local icon = isdir and image.DIRECTORY or extmap[ext] or image.FILEOTHER
   if startfile and startfile == name then icon = image.FILEOTHERSTART end
   return icon
 end
@@ -886,12 +888,13 @@ end
 -- project
 local projtree = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
   wx.wxDefaultPosition, wx.wxDefaultSize,
-  wx.wxTR_HAS_BUTTONS + wx.wxTR_MULTIPLE + wx.wxTR_LINES_AT_ROOT
+  wx.wxTR_HAS_BUTTONS + wx.wxTR_MULTIPLE + wx.wxTR_TWIST_BUTTONS + wx.wxTR_NO_LINES
   + wx.wxTR_EDIT_LABELS + wx.wxNO_BORDER)
 projtree:SetFont(ide.font.tree)
 filetree.projtreeCtrl = projtree
 
-ide:GetProjectNotebook():AddPage(projtree, TR("Project"), true)
+local bmp = ide:GetBitmap("PROJECT", "TREE", wx.wxSize(16, 16))
+ide:GetProjectNotebook():AddPage(projtree, TR("Project"), true, bmp)
 
 -- proj connectors
 -- ---------------

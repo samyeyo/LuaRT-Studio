@@ -49,7 +49,7 @@ require("wx")
 if not bit then require("bit") end
 require("mobdebug")
 if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
-wx.wxSplashScreen(wx.wxBitmap("studio/res/zerobrane.png"), wx.wxSPLASH_CENTRE_ON_SCREEN + wx.wxSPLASH_TIMEOUT, 1000, wx.NULL, wx.wxID_ANY)
+wx.wxSplashScreen(wx.wxBitmap("studio/res/studio.png"), wx.wxSPLASH_CENTRE_ON_SCREEN + wx.wxSPLASH_TIMEOUT, 1000, wx.NULL, wx.wxID_ANY)
 dofile "src/util.lua"
 
 -----------
@@ -185,6 +185,17 @@ local fontWeights = {
 for k,v in pairs(fontWeights) do
   if not wx["wxFONTWEIGHT_"..k] then wx["wxFONTWEIGHT_"..k] = v end
 end
+
+local function LoadFonts()
+  local dir = wx.wxDir()
+  local n, files = dir.GetAllFiles(wx.wxGetCwd().."\\studio\\res\\fonts\\")
+  local font = wx.wxFont()
+  for i=1,n do
+    font.AddPrivateFont(files[i])
+  end
+end
+
+LoadFonts()
 
 -- it's an interface constant and is not public in wxlua, so add it
 if not wxstc.wxSTC_SETLEXERLANGUAGE then wxstc.wxSTC_SETLEXERLANGUAGE = 4006 end

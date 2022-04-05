@@ -25,9 +25,9 @@ debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
   return hostname and socket.dns.toip(hostname) and hostname or "localhost"
 end)()
-debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP")
+debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP", "VALUE-TABLE", "VALUE-FUNCTION", "VALUE-OBJECT", "VALUE-STRING", "VALUE-NUMBER", "VALUE-INSTANCE")
 
-local image = { STACK = 0, LOCAL = 1, UPVALUE = 2 }
+local image = { STACK = 0, LOCAL = 1, UPVALUE = 2, TABLE = 3, FUNCTION = 4, OBJECT = 5, STRING = 6, NUMBER = 7, INSTANCE = 8}
 local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
@@ -183,8 +183,9 @@ function debugger:updateStackSync()
         -- if not a simple type, the string value.
         local value = val[1]
         if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
-        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
-        local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
+        local text = name--("%s = %s"):format(name, fixUTF8(serialize(value, params)))
+        local image = stackCtrl:GetImageFromValue(value)
+        local item = stackCtrl:AppendItem(callitem, text, image)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
         stackCtrl:SetItemName(item, name)
       end
@@ -193,10 +194,11 @@ function debugger:updateStackSync()
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
         local value = val[1]
         if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
-        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
-        local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
+        local text = name--("%s = %s"):format(name, fixUTF8(serialize(value, params)))
+        local image = stackCtrl:GetImageFromValue(value)
+        local item = stackCtrl:AppendItem(callitem, text, image)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
-        stackCtrl:SetItemName(item, name)
+        stackCtrl:SetItemName(item, image > 5 and (name..' = '..value) or name)
       end
 
       stackCtrl:SortChildren(callitem)
@@ -854,7 +856,6 @@ function debugger:handle(command, server, options)
   if codepage and type(file) == "string" and FixUTF8(file) == nil and winapi then
     file = winapi.encode(codepage, winapi.CP_UTF8, file)
   end
-
   return file, line, err
 end
 
@@ -1191,6 +1192,30 @@ local function debuggerCreateStackWindow()
 
   function stackCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
+  local type_img = { ["table"] = 3, ["object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7}
+  function stackCtrl:GetImageFromValue(value)
+    -- local value = value or self:GetItemChildren(self:GetItemParent(item))[self:GetItemText(item)]
+    local image
+    if value ~= nil then
+      local t = type(value)
+      -- ide:Print(self:GetItemText(item).." => "..t)
+      if t == "table" then
+        if value.constructor ~= nil then
+          image = 5
+        elseif getmetatable(value) ~= nil and getmetatable(value).__type ~= nil then
+          image = 8
+        else
+          image = 3
+        end
+      else
+        image = type_img[t]
+      end
+    else
+      image = -1
+    end
+    return image
+  end
+
   function stackCtrl:DeleteAll()
     self:DeleteAllItems()
     valuecache = {}
@@ -1259,6 +1284,7 @@ local function debuggerCreateStackWindow()
           local ok, res = LoadSafe("return "..tostring(value))
           if ok then
             self:SetItemValueIfExpandable(item, res)
+            ide:Print(res)
             self:Expand(item)
 
             local name = self:GetItemName(item)
@@ -1306,19 +1332,46 @@ local function debuggerCreateStackWindow()
 
       stackCtrl:Freeze()
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
-        local item = stackCtrl:AppendItem(item_id, "", image)
+        local image = stackCtrl:GetImageFromValue(value)
+        item = stackCtrl:AppendItem(item_id, "")
+        if image ~= nil then
+          stackCtrl:SetItemImage(item, image)
+        end
         stackCtrl:SetItemValueIfExpandable(item, value, true)
 
-        local strval = stackCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
-        stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
+        local text = name
+        if image ~= nil and image > 5 then
+          text = name..' = '..fixUTF8(serialize(value, params))
+        end
+        stackCtrl:SetItemText(item, text) --stringifyKeyIntoPrefix(name, num)..strval)
         stackCtrl:SetItemName(item, name)
-
         num = num + 1
         if num > maxnum then break end
       end
       stackCtrl:Thaw()
       return true
     end)
+
+    stackCtrl:Connect(wx.wxEVT_TREE_ITEM_GETTOOLTIP,
+    function (event)
+      stackCtrl:Freeze()
+      local item_id = event:GetItem() 
+      local val = stackCtrl:GetItemChildren(stackCtrl:GetItemParent(item_id))[stackCtrl:GetItemText(item_id)]
+      if val ~= nil then
+        local t
+        local image = stackCtrl:GetItemImage(item_id, wx.wxTreeItemIcon_Normal)
+        for k, v in pairs(type_img) do
+          if v == image then
+              t = k
+            break
+          end
+        end
+        event:SetToolTip(t or tostring(val):match("^(%w+)"))
+      end
+      stackCtrl:Thaw()
+      return true
+    end)
+
 
   stackCtrl:Connect(wx.wxEVT_SET_FOCUS, function(event)
       local debugger = ide:GetDebugger()
@@ -1351,9 +1404,9 @@ local function debuggerCreateStackWindow()
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
   if layout and not layout:find("stackpanel") then
-    ide:AddPanelDocked(ide.frame.bottomnotebook, stackCtrl, "stackpanel", TR("Stack"))
+    ide:AddPanelDocked(ide.frame.bottomnotebook, stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(16, 16)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
   else
-    ide:AddPanel(stackCtrl, "stackpanel", TR("Stack"))
+    ide:AddPanel(stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(16, 16)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
   end
 end
 
@@ -1672,9 +1725,9 @@ local function debuggerCreateWatchWindow()
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
   if layout and not layout:find("watchpanel") then
-    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", TR("Watch"))
+    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(16, 16)))
   else
-    ide:AddPanel(watchCtrl, "watchpanel", TR("Watch"))
+    ide:AddPanel(watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(16, 16)))
   end
 end
 
@@ -1714,6 +1767,10 @@ function debugger:Stop()
   -- terminate the local session (if still active)
   if killProcess(ide:GetLaunchedProcess()) then ide:SetLaunchedProcess(nil) end
   debugger:terminate()
+  debugger.stackCtrl:Freeze()
+  debugger.stackCtrl:DeleteAll()
+  debugger.stackCtrl:Thaw()
+  debugger:RefreshPanels()
 end
 
 function debugger:Shutdown()

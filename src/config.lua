@@ -182,7 +182,7 @@ return {
   },
   default = {
     extension = 'lua',
-    interpreter = 'luadeb',
+    interpreter = 'console',
     name = 'untitled',
     usecurrentextension = true,
   },
@@ -227,7 +227,7 @@ return {
   filetree = {
     fontname = nil,
     fontsize = 9,
-    iconmap = {},
+    iconmap = false,
     iconfontname = nil, -- font name to use in file icons
     mousemove = true,
     showchanges = true,
@@ -274,7 +274,7 @@ return {
   toolbar = {
     icons = {},
     iconmap = {},
-    iconsize = nil, -- icon size is set dynamically unless specified in the config
+    iconsize = 16, -- icon size is set dynamically unless specified in the config
   },
 
   keymap = {},

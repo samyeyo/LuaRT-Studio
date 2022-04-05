@@ -188,6 +188,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local doc = ide:GetDocument(editor)
   if doc then -- existing editor; switch to the tab
     notebook:SetSelection(doc:GetTabIndex())
+    notebook:SetPageBitmap(doc:GetTabIndex(), ide:CreateFileIcon(GetFileExt(filePath)) or ide.filetree.imglist:GetBitmap(2))
   else -- the editor has not been added to notebook
     doc = AddEditor(editor, wx.wxFileName(filePath):GetFullName() or ide:GetDefaultFileName())
   end
