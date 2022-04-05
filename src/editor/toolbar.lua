@@ -45,7 +45,7 @@ ide.config.toolbar.iconmap = {
   -- search toolbar
   [ID.FINDNEXT] = {"FIND-NEXT", TR("Find next")},
   [ID.FINDREPLACENEXT] = {"FIND-REPLACE-NEXT", TR("Replace next instance")},
-  [ID.FINDREPLACEALL] = {"FIND-AND-REPLACE", TR("Replace all")},
+  [ID.FINDREPLACEALL] = {"FIND-AND-REPLACE-ALL", TR("Replace all")},
   [ID.FINDSETDIR] = {"FIND-OPT-SETDIR", TR("Set search directory")},
   [ID.FINDOPTDIRECTION] = {"FIND-OPT-DOWN", TR("Search direction")},
   [ID.FINDOPTWRAPWROUND] = {"FIND-OPT-WRAP-AROUND", TR("Wrap around")},

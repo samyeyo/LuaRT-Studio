@@ -1284,7 +1284,6 @@ local function debuggerCreateStackWindow()
           local ok, res = LoadSafe("return "..tostring(value))
           if ok then
             self:SetItemValueIfExpandable(item, res)
-            ide:Print(res)
             self:Expand(item)
 
             local name = self:GetItemName(item)

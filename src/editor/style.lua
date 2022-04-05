@@ -160,9 +160,9 @@ function StylesGetDefault()
 end
 
 local markers = {
-  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, {196, 64, 64}, {220, 64, 64}},
-  bookmark = {1, wxstc.wxSTC_MARK_BOOKMARK or wxstc.wxSTC_MARK_SHORTARROW, {16, 96, 128}, {96, 160, 220}},
-  currentline = {2, wxstc.wxSTC_MARK_ARROW, {16, 128, 16}, {64, 220, 64}},
+  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, {255, 255, 255}, {0, 0, 0}},
+  bookmark = {1, wxstc.wxSTC_MARK_BOOKMARK or wxstc.wxSTC_MARK_SHORTARROW, {0, 0, 0}, {255, 255, 255}},
+  currentline = {2, wxstc.wxSTC_MARK_ARROW, {32, 160, 234}, {32, 160, 234}},
   message = {3, wxstc.wxSTC_MARK_CHARACTER+(' '):byte(), {0, 0, 0}, {220, 220, 220}},
   output = {4, wxstc.wxSTC_MARK_BACKGROUND, {0, 0, 0}, {240, 240, 240}},
   prompt = {5, wxstc.wxSTC_MARK_ARROWS, {0, 0, 0}, {220, 220, 220}},
@@ -336,7 +336,7 @@ local specialmapping = {
         local data = children:Item(child):GetData()
         local _, window = pcall(function() return data:DynamicCast("wxWindow") end)
         if window and not skipcolor[window:GetClassInfo():GetClassName()] then
-          window:SetBackgroundColour(bg)
+          -- window:SetBackgroundColour(bg)
           window:SetForegroundColour(fg)
           window:Refresh()
         end

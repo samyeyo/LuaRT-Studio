@@ -33,8 +33,8 @@ return {
     editormessage = "LuaRT Studio Message",
     statuswelcome = "Welcome to LuaRT Studio",
     settingsapp = "LuaRTStudio",
-    settingsvendor = "ZeroBraneLLC",
-    logo = "res/zerobrane.png",
+    settingsvendor = "Samir Tine",
+    logo = "res/studio.png",
     help = "zerobranestudio",
   },
 }

@@ -13,16 +13,14 @@ if mac then
   output.fontname = editor.fontname
   console.fontname = editor.fontname
 else
-  local defaultsize = 10
+  local defaultsize = 8
   editor.fontsize = defaultsize+1
   output.fontsize = defaultsize
   console.fontsize = defaultsize
 
-  local sysid, major, minor = wx.wxGetOsVersion()
-  editor.fontname =
-    win and (major == 5 and "Courier New" or "Consolas") or "Monospace"
-  output.fontname = editor.fontname
-  console.fontname = editor.fontname
+  editor.fontname = "Fira Code Retina"
+  output.fontname = "DejaVu Sans Mono"
+  console.fontname = output.fontname
 end
 
 filetree.iconfontname = editor.fontname
