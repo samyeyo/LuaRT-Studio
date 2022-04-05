@@ -170,7 +170,8 @@ local function createNotebook(frame)
   local notebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
-    + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
+    -- + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
+    + wx.wxNO_BORDER)
 
   -- there is a protected method in wxwidgets, but it's not available in wxlua,
   -- so use a workaround to find the tab control that the page belongs to.
@@ -662,10 +663,10 @@ local function createBottomNotebook(frame)
   -- connect to the main frame, so it can be called from anywhere
   frame:Connect(ID.CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ide:GetConsole():Erase() end)
-
-  bottomnotebook:AddPage(errorlog, TR("Output"), true)
-  bottomnotebook:AddPage(shellbox, TR("Local console"), false)
-
+  local bmp = ide:GetBitmap("OUTPUT", "PRINT", wx.wxSize(16, 16))
+  bottomnotebook:AddPage(errorlog, TR("Output"), true, bmp)
+  bmp = ide:GetBitmap("OUTPUT", "CONSOLE", wx.wxSize(16, 16))
+  bottomnotebook:AddPage(shellbox, TR("Local console"), false, bmp)
   bottomnotebook.errorlog = errorlog
   bottomnotebook.shellbox = shellbox
 

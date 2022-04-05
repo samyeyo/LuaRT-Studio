@@ -363,9 +363,9 @@ local function createOutlineWindow()
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
   if not layout or not layout:find("outlinepanel") then
-    ide:AddPanelDocked(ide:GetProjectNotebook(), ctrl, "outlinepanel", TR("Outline"), reconfigure, false)
+    ide:AddPanelDocked(ide:GetProjectNotebook(), ctrl, "outlinepanel", TR("Outline"), reconfigure, false, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(16, 16)))
   else
-    ide:AddPanel(ctrl, "outlinepanel", TR("Outline"), reconfigure)
+    ide:AddPanel(ctrl, "outlinepanel", TR("Outline"), reconfigure, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(16, 16)))
   end
 end
 

@@ -587,7 +587,8 @@ function findReplace:RunInFiles(replace)
 
       -- mark as searchpreview to allow AddPage to add "close" button
       reseditor.searchpreview = findText
-      nb:AddPage(reseditor, previewText, true)
+      local bmp = ide:GetBitmap("OUTPUT", "FIND", wx.wxSize(16, 16))
+      nb:AddPage(reseditor, previewText, true, bmp)
     end
     reseditor:SetWrapMode(wxstc.wxSTC_WRAP_NONE)
     reseditor:SetIndentationGuides(false)
@@ -920,6 +921,7 @@ function findReplace:createPanel()
   local bbrush = wx.wxBrush(pancolor, wx.wxSOLID)
   local tempctrl = ide:IsValidCtrl(ide:GetProjectTree()) and ide:GetProjectTree() or wx.wxTreeCtrl()
   local tfont = tempctrl:GetFont()
+  
   -- don't increase font size on Linux as it gets too large
   tfont:SetPointSize(tfont:GetPointSize() + (ide.osname == 'Unix' and 0 or 1))
 
@@ -943,14 +945,14 @@ function findReplace:createPanel()
   ctrl:SetSizer(mainSizer)
   ctrl:GetSizer():Fit(ctrl)
 
-  for _, control in ipairs({findCtrl, replaceCtrl}) do
-    control:SetBackgroundColour(backcolor)
-    control:SetForegroundColour(textcolor)
-    control:SetFont(tfont)
-  end
-  scope:SetBackgroundColour(pancolor) -- set toolbar background
-  scope:SetFont(tfont)
-  status:SetFont(tfont)
+  -- for _, control in ipairs({findCtrl, replaceCtrl}) do
+    -- control:SetBackgroundColour(backcolor)
+    -- control:SetForegroundColour(textcolor)
+    -- control:SetFont(tfont)
+  -- end
+  -- scope:SetBackgroundColour(pancolor) -- set toolbar background
+  -- scope:SetFont(tfont)
+  -- status:SetFont(tfont)
 
   local function updateLists()
     PrependStringToArray(self.settings.flist, findCtrl:GetValue())

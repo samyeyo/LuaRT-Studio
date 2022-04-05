@@ -455,7 +455,8 @@ function ide:GetTextFromUser(message, caption, value)
 end
 
 function ide:GetTabArt()
-  local tabart = wxaui.wxAuiGenericTabArt and wxaui.wxAuiGenericTabArt() or wxaui.wxAuiDefaultTabArt()
+  local tabart = wxaui.wxAuiDefaultTabArt()
+  -- local tabart = wxaui.wxAuiGenericTabArt and wxaui.wxAuiGenericTabArt() or wxaui.wxAuiDefaultTabArt()
   -- editor tab height is off by 1 pixel on macOS between tabs with images and not
   -- (as the height of the image is 16 pixels, but height of the font line is 15),
   -- so increase the measuring font a bit to make all tabs of the same height
@@ -1086,25 +1087,27 @@ function ide:GetBitmap(id, client, size)
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else
-    if width > 16 and scale > 1 and width % scale == 0 then
-      local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
-      if f then
-        local img = wx.wxBitmap(f):ConvertToImage()
-        bmp = wx.wxBitmap(img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST))
-        file = fileClient
-      end
-    end
-    if not file then
-      bmp = wx.wxArtProvider.GetBitmap(id, client, size)
-      file = fileClient
-    end
+    return nil
+    -- if width > 16 and scale > 1 and width % scale == 0 then
+    --   local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
+    --   if f then
+    --     local img = wx.wxBitmap(f):ConvertToImage()
+    --     bmp = wx.wxBitmap(img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST))
+    --     file = fileClient
+    --   end
+    -- end
+    -- if not file then
+    --   -- bmp = wx.wxArtProvider.GetBitmap(id, client, size)
+    --   -- file = fileClient
+    --   return nil
+    -- end
   end
-  local icon = icons[file] or iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
+  local icon = icons[file] or wx.wxBitmap(file)--iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
   -- convert bitmap to set proper scaling on it, but only if scaling is supported;
   -- this requires special constructor that acceps additional (scale) parameter
-  if ide.wxver >= "3.1.2" and scale > 1 then
-    icon = wx.wxBitmap(icon:ConvertToImage(), icon:GetDepth(), scale)
-  end
+  -- if ide.wxver >= "3.1.2" and scale > 1 then
+  --   icon = wx.wxBitmap(icon:ConvertToImage(), icon:GetDepth(), scale)
+  -- end
   icons[file] = icon
   return icon, file
 end
@@ -1120,37 +1123,37 @@ local function str2rgb(str)
 end
 local iconfont
 function ide:CreateFileIcon(ext)
-  local iconmap = ide.config.filetree.iconmap
-  local mac = ide.osname == "Macintosh"
-  local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
-  local scale = ide:GetContentScaleFactor()
-  local size = 16
-  local bitmap = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size*scale,size*scale))
+  -- local iconmap = ide.config.filetree.iconmap
+  -- local mac = ide.osname == "Macintosh"
+  -- local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
+  -- local scale = ide:GetContentScaleFactor()
+  local bitmap = ide:GetBitmap("filetypes/"..ext, "PROJECT", wx.wxSize(16, 16))
+  -- local bitmap = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size,size))
   -- macOS does its own scaling for drawing on DC surface, so set to no scaling
-  if mac then scale = 1 end
-  bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
-  iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
-    wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
-    ide.config.filetree.iconfontname or ide.config.editor.fontname or "", wx.wxFONTENCODING_DEFAULT)
-  local mdc = wx.wxMemoryDC()
-  mdc:SelectObject(bitmap)
-  mdc:SetFont(iconfont)
-  mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
-  -- take first three letters of the extension
-  local text = ext:sub(1,3)
-  local topstripe = 3*scale
-  local topborder = 2*scale
-  local w, h = mdc:GetTextExtent(text)
-  mdc:DrawText(text, (size*scale-w)/2, topstripe+topborder+(size*scale-topstripe-topborder-h-1)/2)
-  if #ext > 0 then
-    local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
-    mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
-    mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-    mdc:DrawRectangle(1*scale, topborder, (size-(mac and 1 or 2))*scale, topstripe)
-  end
-  mdc:SetFont(wx.wxNullFont)
-  mdc:SelectObject(wx.wxNullBitmap)
-  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
+  -- if mac then scale = 1 end
+  -- bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
+  -- iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
+  --   wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
+  --   ide.config.filetree.iconfontname or ide.config.editor.fontname or "", wx.wxFONTENCODING_DEFAULT)
+  -- local mdc = wx.wxMemoryDC()
+  -- mdc:SelectObject(bitmap)
+  -- mdc:SetFont(iconfont)
+  -- mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
+  -- -- take first three letters of the extension
+  -- local text = ext:sub(1,3)
+  -- local topstripe = 3*scale
+  -- local topborder = 2*scale
+  -- local w, h = mdc:GetTextExtent(text)
+  -- mdc:DrawText(text, (size*scale-w)/2, topstripe+topborder+(size*scale-topstripe-topborder-h-1)/2)
+  -- if #ext > 0 then
+  --   local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
+  --   mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
+  --   mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
+  --   mdc:DrawRectangle(1*scale, topborder, (size-(mac and 1 or 2))*scale, topstripe)
+  -- end
+  -- mdc:SetFont(wx.wxNullFont)
+  -- mdc:SelectObject(wx.wxNullBitmap)
+    -- bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
   return bitmap
 end
 
@@ -1362,15 +1365,18 @@ function ide:SetConfig(key, value, name)
 end
 
 local panels = {}
-function ide:AddPanel(ctrl, panel, name, conf)
+function ide:AddPanel(ctrl, panel, name, conf, bmp)
   if not self:IsValidCtrl(ctrl) then return end
   local width, height = 360, 200
   local notebook = ide:CreateNotebook(self.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:SetArtProvider(ide:GetTabArt())
-  notebook:AddPage(ctrl, name, true)
+  if bmp ~= nil then
+    notebook:AddPage(ctrl, name, true, bmp)
+  else
+    notebook:AddPage(ctrl, name, true)
+  end
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
     function() PaneFloatToggle(notebook) end)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
@@ -1385,7 +1391,7 @@ function ide:AddPanel(ctrl, panel, name, conf)
   if type(conf) == "function" then conf(mgr:GetPane(panel)) end
   mgr.defaultPerspective = mgr:SavePerspective() -- resave default perspective
 
-  panels[name] = {ctrl, panel, name, conf}
+  panels[name] = {ctrl, panel, name, conf, bmp}
   return mgr:GetPane(panel), notebook
 end
 
@@ -1404,17 +1410,21 @@ function ide:IsPanelDocked(panel)
   local layout = self:GetSetting("/view", "uimgrlayout")
   return layout and not layout:find(panel)
 end
-function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate)
-  notebook:AddPage(ctrl, name, activate ~= false)
-  panels[name] = {ctrl, panel, name, conf}
+function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate, bmp)
+  if bmp ~= nil then
+    notebook:AddPage(ctrl, name, activate ~= false, bmp)
+  else
+    notebook:AddPage(ctrl, name, activate ~= false)
+  end
+  panels[name] = {ctrl, panel, name, conf, bmp}
   return notebook
 end
-function ide:AddPanelFlex(notebook, ctrl, panel, name, conf)
+function ide:AddPanelFlex(notebook, ctrl, panel, name, conf, bmp)
   local nb
   if self:IsPanelDocked(panel) then
-    nb = self:AddPanelDocked(notebook, ctrl, panel, name, conf, false)
+    nb = self:AddPanelDocked(notebook, ctrl, panel, name, conf, false, bmp)
   else
-    self:AddPanel(ctrl, panel, name, conf)
+    self:AddPanel(ctrl, panel, name, conf, bmp)
   end
   return nb
 end
