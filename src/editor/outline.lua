@@ -1,10 +1,16 @@
 -- Copyright 2014-17 Paul Kulchenko, ZeroBrane LLC
 
+local globals = { ["arg"] = true, ["assert"] = true, ["collectgarbage"] = true, ["dofile"] = true, ["error"] = true, ["getmetatable"] = true, ["ipairs"] = true, ["load"] = true, ["loadfile"] = true, ["next"] = true, ["Object"] = true, ["pairs"] = true, ["ipairs"] = true, ["each"] = true, ["is"] = true, ["pcall"] = true, ["print"] = true, ["rawequal"] = true,
+["rawget"] = true, ["rawset"] = true, ["rawlen"] = true, ["require"] = true, ["select"] = true, ["setmetatable"] = true, ["tonumber"] = true, ["tostring"] = true, ["type"] = true, ["unpack"] = true, ["warn"] = true, ["xpcall"] = true, ["_G"] = true, ["_VERSION"] = true }
+
+local globals_mod = { ["sys"] = true, ["coroutine"] = true, ["package"] = true, ["string"] = true, ["table"] = true, ["math"] = true, ["debug"] = true }
+
 local ide = ide
+local config = ide.config
 ide.outline = {
   outlineCtrl = nil,
-  imglist = ide:CreateImageList("OUTLINE", "FILE-NORMAL", "VALUE-LCALL",
-    "VALUE-GCALL", "VALUE-ACALL", "VALUE-SCALL", "VALUE-MCALL"),
+  imglist = ide:CreateImageList("OUTLINE", "FILE-NORMAL", "FUNC-LOCAL","FUNC-GLOBAL", "FUNC-ANON", "FUNC-METHOD", "FUNC-SELF", "VAR-LOCAL", "VAR-GLOBAL"),
+  typelist = { nil, "local function", "global function", "anonymous function", "member function", "method", "local variable", "global variable" }, 
   settings = {
     symbols = {},
     ignoredirs = {},
@@ -17,7 +23,7 @@ ide.outline = {
 
 local outline = ide.outline
 local image = { FILE = 0, LFUNCTION = 1, GFUNCTION = 2, AFUNCTION = 3,
-  SMETHOD = 4, METHOD = 5,
+  SMETHOD = 4, METHOD = 5, LVARIABLE = 6, GVARIABLE = 7
 }
 local q = EscapeMagic
 local caches = {}
@@ -48,7 +54,9 @@ local function outlineRefresh(editor, force)
   local sep = editor.spec.sep
   local varname = "([%w_][%w_"..q(sep:sub(1,1)).."]*)"
   local funcs = {updated = ide:GetTime()}
+  local vars = {updated = ide:GetTime()}
   local var = {}
+  local varnames = {}
   local outcfg = ide.config.outline or {}
   local scopes = {}
   local funcnum = 0
@@ -56,8 +64,10 @@ local function outlineRefresh(editor, force)
   local text
   for _, token in ipairs(tokens) do
     local op = token[1]
-    if op == 'Var' or op == 'Id' then
-      var = {name = token.name, fpos = token.fpos, global = token.context[token.name] == nil}
+    if op == 'Var' or op == 'Id' then                       
+      var = {name = token.name, pos = token.fpos, global =  token.context[token.name] == nil, func = token.context['function'] and funcs[scopes[#scopes][FUNCNUM]] or nil, mainfunc = token.at == 1, forcelocal = op == 'Var' }
+      var.image = var.global and image.GVARIABLE or image.LVARIABLE
+      vars[#vars+1] = var
     elseif outcfg.showcurrentfunction and op == 'Scope' then
       local fundepth = #scopes
       if token.name == '(' then -- a function starts a new scope
@@ -79,7 +89,7 @@ local function outlineRefresh(editor, force)
           table.remove(scopes)
         end
       end
-    elseif op == 'Function' then
+    elseif op == 'Function' then      
       local depth = token.context['function'] or 1
       local name, pos = token.name, token.fpos
       text = text or editor:GetTextDyn()
@@ -102,10 +112,12 @@ local function outlineRefresh(editor, force)
         ftype = image.AFUNCTION
       elseif outcfg.showmethodindicator and name:find('['..q(sep)..']') then
         ftype = name:find(q(sep:sub(1,1))) and image.SMETHOD or image.METHOD
-      elseif var.name == name and var.fpos == pos
-      or var.name and name:find('^'..var.name..'['..q(sep)..']') then
-        ftype = var.global and image.GFUNCTION or image.LFUNCTION
+      else
+        if var.name == name and var.pos == pos or var.name and name:find('^'..var.name..'['..q(sep)..']') then
+          ftype = token.context[token.name] == nil and image.GFUNCTION or image.LFUNCTION
+        end
       end
+      vars[#vars] = nil
       name = name or outcfg.showanonymous
       funcs[#funcs+1] = {
         name = ((name or '~')..(params or "")):gsub("%s+", " "),
@@ -135,6 +147,7 @@ local function outlineRefresh(editor, force)
     if outcfg.showonefile then
       fileitem = root
     else
+      outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)))
       fileitem = ctrl:AppendItem(root, filename, image.FILE)
       setData(ctrl, fileitem, editor)
       ctrl:SetItemBold(fileitem, true)
@@ -143,16 +156,45 @@ local function outlineRefresh(editor, force)
     cache.fileitem = fileitem
   end
 
+  local nochange
+
+  do -- check if any changes in the cached function list
+    local prevvars = cache.vars or {}
+    local vnochange = #vars == #prevvars
+    local resort = {} -- items that need to be re-sorted
+    if vnochange then
+      for n, _var in ipairs(vars) do
+        _var.item = prevvars[n].item -- carry over cached items
+       if prevvars[n].item then
+          if _var.name ~= prevvars[n].name then
+            ctrl:SetItemText(prevvars[n].item, _var.name)
+            if outcfg.sort then resort[ctrl:GetItemParent(prevvars[n].item)] = true end
+          end
+          if _var.image ~= prevvars[n].image then
+            ctrl:SetItemImage(prevvars[n].item, _var.image)
+          end
+        end
+      end
+    end
+    cache.vars = vars -- set new cache as positions may change
+    if vnochange and not force then -- return if no visible changes
+      if outcfg.sort then -- resort items for all parents that have been modified
+        for item in pairs(resort) do ctrl:SortChildren(item) end
+      end
+    end
+    nochange = vnochange
+  end
+
   do -- check if any changes in the cached function list
     local prevfuncs = cache.funcs or {}
-    local nochange = #funcs == #prevfuncs
+    local fnochange = #funcs == #prevfuncs
     local resort = {} -- items that need to be re-sorted
-    if nochange then
+    if fnochange then
       for n, func in ipairs(funcs) do
         func.item = prevfuncs[n].item -- carry over cached items
         if func.depth ~= prevfuncs[n].depth then
-          nochange = false
-        elseif nochange and prevfuncs[n].item then
+          fnochange = false
+        elseif fnochange and prevfuncs[n].item then
           if func.name ~= prevfuncs[n].name then
             ctrl:SetItemText(prevfuncs[n].item, func.name)
             if outcfg.sort then resort[ctrl:GetItemParent(prevfuncs[n].item)] = true end
@@ -164,14 +206,15 @@ local function outlineRefresh(editor, force)
       end
     end
     cache.funcs = funcs -- set new cache as positions may change
-    if nochange and not force then -- return if no visible changes
+    if fnochange and not force then -- return if no visible changes
       if outcfg.sort then -- resort items for all parents that have been modified
         for item in pairs(resort) do ctrl:SortChildren(item) end
       end
-      return
+      if vnochange then
+        return
+      end
     end
   end
-
   -- refresh the tree
   -- refreshing shouldn't change the focus of the current element,
   -- but it appears that DeleteChildren (wxwidgets 2.9.5 on Windows)
@@ -190,11 +233,17 @@ local function outlineRefresh(editor, force)
   local edpos = editor:GetCurrentPos()+1
   local stack = {fileitem}
   local resort = {} -- items that need to be re-sorted
+  local funcvars = {}
+  local globalvars = {}
   for n, func in ipairs(funcs) do
     local depth = outcfg.showflat and 1 or func.depth
     local parent = stack[depth]
+    funcvars[func.name:gsub("%(.*%)", "")] = {}
     while not parent do depth = depth - 1; parent = stack[depth] end
     if not func.skip then
+      if func.image == image.GFUNCTION or (func.depth == 1 and func.image == image.LFUNCTION) then
+        globalvars[func.name:gsub("%(.*%)", "")] = true
+      end
       local item = ctrl:AppendItem(parent, func.name, func.image)
       if ide.config.outline.showcurrentfunction
       and edpos >= func.pos and func.poe and edpos <= func.poe then
@@ -206,6 +255,25 @@ local function outlineRefresh(editor, force)
       stack[func.depth+1] = item
     end
     func.skip = nil
+  end
+
+  local item
+  for n, var in ipairs(vars) do
+    if not globals[var.name] and not globals_mod[var.name] and not funcvars[var.name] and not globalvars[var.name] and (var.mainfunc or var.func == nil) then
+      item = ctrl:AppendItem(fileitem, var.name, var.image)
+      globalvars[var.name] = true
+      setData(ctrl, item, -n)
+      var.item = item
+    end
+  end
+  for n, var in ipairs(vars) do
+    local funcname = var.func and var.func.name:gsub("%(.*%)", "") or false
+    if not globals[var.name] and (var.forcelocal or globalvars[var.name] == nil) and not globals_mod[var.name] and var.func ~= nil and funcvars[funcname][var.name] == nil then
+      item = ctrl:AppendItem(var.func.item, var.name, var.image)
+      funcvars[funcname][var.name] = true
+      setData(ctrl, item, -n)
+      var.item = item
+    end
   end
   if outcfg.sort then -- resort items for all parents that have been modified
     for item in pairs(resort) do ctrl:SortChildren(item) end
@@ -265,17 +333,15 @@ end
 local function createOutlineWindow()
   local width, height = 360, 200
   local ctrl = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxSize(width, height),
-    wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS
-    + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
+    wx.wxDefaultPosition, wx.wxSize(width, height), wx.wxTR_HAS_BUTTONS + wx.wxTR_NO_LINES +
+    wx.wxTR_TWIST_BUTTONS + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   outline.outlineCtrl = ctrl
   ide.timers.outline = ide:AddTimer(ctrl, function() outlineRefresh(ide:GetEditor(), false) end)
   ide.timers.symbolindex = ide:AddTimer(ctrl, function() ide:DoWhenIdle(indexFromQueue) end)
-
   ctrl:AddRoot("Outline")
   ctrl:SetImageList(outline.imglist)
-  ctrl:SetFont(ide.font.tree)
+  ctrl:SetFont(ide:CreateFont(config.outline.fontsize or 9, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,wx.wxFONTWEIGHT_NORMAL, false, config.outline.fontname or "Segoe UI", config.fontencoding or wx.wxFONTENCODING_DEFAULT))
 
   function ctrl:ActivateItem(item_id)
     local data = ctrl:GetItemData(item_id)
@@ -298,8 +364,17 @@ local function createOutlineWindow()
       local editor = onefile and ide:GetEditor() or ctrl:GetItemData(parent):GetData()
       local cache = caches[editor]
       if editor and cache then
+        ctrl:SelectItem(item_id)
+        local n = data:GetData()
+        local item = n > 0 and cache.funcs[n] or cache.vars[-n]
+        -- if n > 0 then
         -- move to position in the file
-        editor:GotoPosEnforcePolicy(cache.funcs[data:GetData()].pos-1)
+          editor:GotoPosEnforcePolicy(item.pos-1)
+        -- else
+          -- editor:GotoPosEnforcePolicy(cache.vars[-n].pos-1)
+          -- editor:CmdKeyExecute(wxstc.wxSTC_CMD_WORDRIGHTEXTEND)
+        -- end
+        editor:SetSelectionEnd(item.pos-1+#item.name)
         -- only set editor active after positioning as this may change focus,
         -- which may regenerate the outline, which may invalidate `data` value
         if not ide:GetEditorWithFocus(editor) then ide:GetDocument(editor):SetActive() end
@@ -309,7 +384,7 @@ local function createOutlineWindow()
 
   local function activateByPosition(event)
     local mask = (wx.wxTREE_HITTEST_ONITEMINDENT + wx.wxTREE_HITTEST_ONITEMLABEL
-      + wx.wxTREE_HITTEST_ONITEMICON + wx.wxTREE_HITTEST_ONITEMRIGHT)
+      + wx.wxTREE_HITTEST_ONITEMICON)
     local item_id, flags = ctrl:HitTest(event:GetPosition())
 
     if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
@@ -326,6 +401,16 @@ local function createOutlineWindow()
   ctrl:Connect(wx.wxEVT_LEFT_DCLICK, activateByPosition)
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED, function(event)
       ctrl:ActivateItem(event:GetItem())
+    end)
+  ctrl:Connect(wx.wxEVT_MOTION, function(event)
+    local mask = (wx.wxTREE_HITTEST_ONITEMINDENT + wx.wxTREE_HITTEST_ONITEMLABEL
+      + wx.wxTREE_HITTEST_ONITEMICON)
+    local item_id, flags = ctrl:HitTest(event:GetPosition())
+    if bit.band(flags, mask) > 0 then
+      ctrl:SetCursor(wx.wxCursor(wx.wxCURSOR_HAND))
+    else
+      ctrl:SetCursor(wx.wxCursor(wx.wxCURSOR_ARROW))
+    end
     end)
 
   ctrl:Connect(ID.OUTLINESORT, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -614,18 +699,20 @@ local package = ide:AddPackage('core.outline', {
       local visible = {[MIN] = math.huge, [MAX] = 0}
       local needshown = {[MIN] = math.huge, [MAX] = 0}
 
-      ctrl:Unselect()
+      -- ctrl:Unselect()
       -- scan all items recursively starting from the current file
       eachNode(function(ctrl, item)
           local func = cache.funcs[ctrl:GetItemData(item):GetData()]
-          if not func then return end
+          if not func then
+            return
+          end
           local val = edpos >= func.pos and func.poe and edpos <= func.poe
           if edline == editor:LineFromPosition(func.pos)+1
           or (func.poe and edline == editor:LineFromPosition(func.poe)+1) then
             cache.line = nil
           end
           ctrl:SetItemBold(item, val)
-          if val then ctrl:SelectItem(item, val) end
+          -- if val then ctrl:SelectItem(item, val) end
 
           if not ide.config.outline.jumptocurrentfunction then return end
           n = n + 1
