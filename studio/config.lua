@@ -1,27 +1,11 @@
-local mac = ide.osname == 'Macintosh'
-local win = ide.osname == "Windows"
-if mac then
-  local defaultsize = 11
-  filetree.fontsize = defaultsize
-  if ide.wxver >= "2.9.5" then
-    editor.fontsize = defaultsize+1
-    output.fontsize = defaultsize
-    console.fontsize = defaultsize
-  end
+local defaultsize = 8
+editor.fontsize = defaultsize+1
+output.fontsize = defaultsize
+console.fontsize = defaultsize
 
-  editor.fontname = "Monaco"
-  output.fontname = editor.fontname
-  console.fontname = editor.fontname
-else
-  local defaultsize = 8
-  editor.fontsize = defaultsize+1
-  output.fontsize = defaultsize
-  console.fontsize = defaultsize
-
-  editor.fontname = "Fira Code Retina"
-  output.fontname = "DejaVu Sans Mono"
-  console.fontname = output.fontname
-end
+editor.fontname = "Fira Code Retina"
+output.fontname = "DejaVu Sans Mono"
+console.fontname = output.fontname
 
 filetree.iconfontname = editor.fontname
 

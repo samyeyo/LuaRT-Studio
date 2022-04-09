@@ -44,7 +44,7 @@ ide.proto.Document = {__index = {
     local modpref = ide.config.editor.modifiedprefix or modpref
     local index, notebook = self:GetTabIndex()
     notebook:SetPageText(index,
-      (self:IsModified() and modpref or '')..(text or self:GetTabText()))
+      (text or self:GetTabText())..(self:IsModified() and modpref or ''))
     if ide.config.editor.showtabtooltip and ide:IsValidProperty(notebook, "SetPageToolTip") then
       notebook:SetPageToolTip(index, self:GetFilePath() or text or self:GetTabText())
     end
