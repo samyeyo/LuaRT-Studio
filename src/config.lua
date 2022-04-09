@@ -15,14 +15,14 @@ return {
     extradescent = nil,
     fold = true,
     foldcompact = true,
-    foldtype = 'box',
+    foldtype = 'arrow',
     foldflags = wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED,
     fontname = nil,
     fontsize = nil,
     indentguide = true,
     linecopy = true,
     linenumber = true,
-    modifiedprefix = "✱ ", -- U+2731 \xe2\x9c\xb1 HEAVY ASTERISK
+    modifiedprefix = "*",-- ✱", -- U+2731 \xe2\x9c\xb1 HEAVY ASTERISK
     nomousezoom = false,
     saveallonrun = false,
     showfncall = false,
@@ -235,13 +235,13 @@ return {
   outline = {
     activateonclick = true,
     jumptocurrentfunction = true,
-    showanonymous = '~',
-    showcompact = false,
+    showanonymous = '<anonymous>',
+    showcompact = true,
     showcurrentfunction = true,
     showflat = false,
-    showmethodindicator = false,
+    showmethodindicator = true,
     showonefile = false,
-    sort = false,
+    sort = false
   },
   commandbar = {
     filecache = true, -- caches files for the current session
@@ -253,7 +253,7 @@ return {
   },
   staticanalyzer = {
     infervalue = false, -- run more detailed static analysis; off by default as it's a slower mode
-    luacheck = false, -- don't use luacheck by default; can be set to `true` to enable or a table
+    luacheck = true, -- don't use luacheck by default; can be set to `true` to enable or a table
   },
   search = {
     autocomplete = true,
@@ -278,9 +278,7 @@ return {
   },
 
   keymap = {},
-  imagemap = {
-    ['VALUE-MCALL'] = 'VALUE-SCALL',
-  },
+  imagemap = {},
   language = "en",
 
   styles = nil,

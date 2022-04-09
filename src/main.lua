@@ -63,7 +63,7 @@ config.path = {
 }
 ide = {
   GetTime = (function(ok, socket) return ok and socket.gettime or os.clock end)(pcall(require, "socket")),
-  MODPREF = "* ",
+  MODPREF = "*",
   MAXMARGIN = wxstc.wxSTC_MAX_MARGIN or 4,
   ANYMARKERMASK = 2^24-1,
   config = config,

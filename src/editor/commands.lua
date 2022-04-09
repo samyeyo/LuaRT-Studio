@@ -20,6 +20,7 @@ function NewFile(filename)
     return
   end
   doc:SetActive()
+  notebook:SetPageBitmap(doc:GetTabIndex(), ide:CreateFileIcon(GetFileExt(filename)) or ide.filetree.imglist:GetBitmap(2))
   PackageEventHandle("onEditorNew", editor)
   return editor
 end
@@ -188,10 +189,10 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local doc = ide:GetDocument(editor)
   if doc then -- existing editor; switch to the tab
     notebook:SetSelection(doc:GetTabIndex())
-    notebook:SetPageBitmap(doc:GetTabIndex(), ide:CreateFileIcon(GetFileExt(filePath)) or ide.filetree.imglist:GetBitmap(2))
   else -- the editor has not been added to notebook
     doc = AddEditor(editor, wx.wxFileName(filePath):GetFullName() or ide:GetDefaultFileName())
   end
+  notebook:SetPageBitmap(doc:GetTabIndex(), ide:CreateFileIcon(GetFileExt(filePath)) or ide.filetree.imglist:GetBitmap(2))
   doc.filePath = filePath
   doc.fileName = wx.wxFileName(filePath):GetFullName()
   doc.modTime = GetFileModTime(filePath)
