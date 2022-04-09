@@ -109,6 +109,7 @@ local function new_var(line, node, type_)
       type = type_,
       self = node.implicit,
       line = line,
+      hint_unused = type_ == "arg" and node[1]:match("^_%a"),
       scope_start = line.items.size + 1,
       values = {}
    }
@@ -610,7 +611,7 @@ function LinState:scan_expr_Op(item, node)
    end
 end
 
--- Puts tables {var = value{} into field `set_variables` of items in line which set values.
+-- Puts tables {var = value} into field `set_variables` of items in line which set values.
 -- Registers set values in field `values` of variables.
 function LinState:register_set_variables()
    local line = self.lines.top

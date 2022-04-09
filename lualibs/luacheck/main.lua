@@ -1,4 +1,5 @@
 local argparse = require "argparse"
+local cache = require "luacheck.cache"
 local config = require "luacheck.config"
 local luacheck = require "luacheck"
 local multithreading = require "luacheck.multithreading"
@@ -25,7 +26,7 @@ local function get_parser()
       "luacheck", "luacheck " .. luacheck._VERSION .. ", a linter and a static analyzer for Lua.", [[
 Links:
 
-   Luacheck on GitHub: https://github.com/mpeterv/luacheck
+   Luacheck on GitHub: https://github.com/lunarmodules/luacheck
    Luacheck documentation: https://luacheck.readthedocs.org]])
       :help_max_width(80)
 
@@ -80,6 +81,8 @@ Links:
          "   lua52c - globals of Lua 5.2 with LUA_COMPAT_ALL;\n" ..
          "   lua53 - globals of Lua 5.3;\n" ..
          "   lua53c - globals of Lua 5.3 with LUA_COMPAT_5_2;\n" ..
+         "   lua54 - globals of Lua 5.4;\n" ..
+         "   lua54c - globals of Lua 5.4 with LUA_COMPAT_5_3;\n" ..
          "   luajit - globals of LuaJIT 2.x;\n" ..
          "   ngx_lua - globals of Openresty lua-nginx-module 0.10.10, including standard LuaJIT 2.x globals;\n" ..
          "   love - globals added by LÖVE;\n" ..
@@ -206,7 +209,8 @@ Links:
 
    parser:option("--filename", "Use another filename in output and for selecting configuration overrides.")
 
-   local cache_opt = parser:option("--cache", "Path to cache file (default: .luacheckcache).")
+   local cache_opt = parser:option("--cache", ("Path to cache directory. (default: %s)"):format(
+         cache.get_default_dir()))
       :args "?"
 
    local no_cache_opt = parser:flag("--no-cache", "Do not use cache.")
@@ -345,7 +349,7 @@ if utils.is_instance(err, utils.InvalidPatternError) then
 elseif type(err) == "string" and err:find("interrupted!$") then
    critical("Interrupted")
 else
-   local msg = ("Luacheck %s bug (please report at https://github.com/mpeterv/luacheck/issues):\n%s\n%s"):format(
+   local msg = ("Luacheck %s bug (please report at https://github.com/lunarmodules/luacheck/issues):\n%s\n%s"):format(
       luacheck._VERSION, err, traceback)
    critical(msg)
 end

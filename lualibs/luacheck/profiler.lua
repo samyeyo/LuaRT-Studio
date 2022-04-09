@@ -10,10 +10,13 @@ local metrics = {
 }
 
 local functions = {
+   {name = "sha1", module = "vendor.sha1"},
    {name = "load", module = "cache"},
    {name = "update", module = "cache"},
    {name = "decode", module = "decoder"},
    {name = "parse", module = "parser"},
+   {name = "dump_check_result", module = "serializer"},
+   {name = "load_check_result", module = "serializer"},
    {name = "run", module = "stages.unwrap_parens"},
    {name = "run", module = "stages.parse_inline_options"},
    {name = "run", module = "stages.linearize"},

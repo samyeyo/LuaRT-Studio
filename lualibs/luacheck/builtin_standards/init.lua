@@ -1,3 +1,5 @@
+local love = require "luacheck.builtin_standards.love"
+local ngx = require "luacheck.builtin_standards.ngx"
 local standards = require "luacheck.standards"
 
 local builtin_standards = {}
@@ -21,11 +23,12 @@ local empty = {}
 local string_defs = {}
 
 string_defs.min = standards.def_fields("byte", "char", "dump", "find", "format", "gmatch",
-   "gsub", "len", "lower", "match", "rep", "reverse", "sub", "upper")
+   "gsub", "len", "lower", "match", "rep", "reverse", "sub", "upper", "capitalize", "search", "similarity")
 
 string_defs.lua51 = add_defs(string_defs.min, standards.def_fields("gfind"))
 string_defs.lua52 = string_defs.min
 string_defs.lua53 = add_defs(string_defs.min, standards.def_fields("pack", "packsize", "unpack"))
+string_defs.lua54 = string_defs.lua53
 string_defs.luajit = string_defs.lua51
 
 local file_defs = {}
@@ -48,6 +51,7 @@ file_defs.min = {
 file_defs.lua51 = file_defs.min
 file_defs.lua52 = file_defs.min
 file_defs.lua53 = add_defs(file_defs.min, {fields = {__name = string_defs.lua53}})
+file_defs.lua54 = add_defs(file_defs.min, {fields = {__name = string_defs.lua54}})
 file_defs.luajit = file_defs.min
 
 local function make_min_def(method_defs)
@@ -67,22 +71,33 @@ local function make_min_def(method_defs)
          dofile = empty,
          error = empty,
          getmetatable = empty,
-         io = {
+         sys = {
             fields = {
-               close = empty,
-               flush = empty,
-               input = empty,
-               lines = empty,
-               open = empty,
-               output = empty,
-               popen = empty,
-               read = empty,
-               stderr = file_def,
-               stdin = file_def,
-               stdout = file_def,
-               tmpfile = empty,
-               type = empty,
-               write = empty
+               File = empty,
+               Directory = empty,
+               Buffer = empty,
+               Datetime = empty,
+               Pipe = empty,
+               clock = empty,
+               exit = empty,
+               sleep = empty,
+               cmd = empty,
+               -- stderr = file_def,
+               -- stdin = file_def,
+               -- stdout = file_def,
+               halt = empty,
+               error = empty,
+               currentdir = empty,
+               clipboard = empty,
+               env = {other_fields = true},
+               tempfile = empty,
+               registry = {
+                  fields = {
+                     read = empty,
+                     write = empty,
+                     delete = empty
+                  }
+               }
             }
          },
          ipairs = empty,
@@ -119,7 +134,10 @@ local function make_min_def(method_defs)
          tonumber = empty,
          tostring = empty,
          type = empty,
-         xpcall = empty
+         xpcall = empty,
+         each = empty,
+         is = empty,
+         Object = empty
       }
    }
 end
@@ -219,6 +237,18 @@ lua_defs.lua53c = add_defs(lua_defs.lua53, {
       math = standards.def_fields("atan2", "cosh", "frexp", "ldexp", "log10", "pow", "sinh", "tanh")
    }
 })
+lua_defs.lua54 = add_defs(lua_defs.lua53, {
+   fields = {
+      warn = empty,
+      debug = standards.def_fields("setcstacklimit"),
+      coroutine = standards.def_fields("close"),
+   }
+})
+lua_defs.lua54c = add_defs(lua_defs.lua54, {
+   fields = {
+      math = standards.def_fields("atan2", "cosh", "frexp", "ldexp", "log10", "pow", "sinh", "tanh")
+   }
+})
 lua_defs.luajit = add_defs(make_min_def("luajit"), {
    fields = {
       bit = standards.def_fields("arshift", "band", "bnot", "bor", "bswap", "bxor", "lshift", "rol", "ror",
@@ -244,38 +274,28 @@ lua_defs.luajit = add_defs(make_min_def("luajit"), {
       unpack = empty
    }
 })
-lua_defs.ngx_lua = add_defs(lua_defs.luajit, require "luacheck.ngx_standard")
-lua_defs.max = add_defs(lua_defs.lua51c, lua_defs.lua52c, lua_defs.lua53c, lua_defs.luajit)
+lua_defs.ngx_lua = add_defs(lua_defs.luajit, ngx)
+lua_defs.max = add_defs(lua_defs.lua51c, lua_defs.lua52c, lua_defs.lua53c, lua_defs.lua54c, lua_defs.luajit)
 
 for name, def in pairs(lua_defs) do
    builtin_standards[name] = def_to_std(def)
 end
 
 local function get_running_lua_std_name()
-   if rawget(_G, "jit") then
-      return "luajit"
-   elseif _VERSION == "Lua 5.1" then
-      return "lua51c"
-   elseif _VERSION == "Lua 5.2" then
-      return "lua52c"
-   elseif _VERSION == "Lua 5.3" then
-      return "lua53c"
-   else
-      return "max"
-   end
+   return "lua54c"
 end
 
 builtin_standards._G = builtin_standards[get_running_lua_std_name()]
 
 builtin_standards.busted = {
    read_globals = {
-      "describe", "insulate", "expose", "it", "pending", "before_each", "after_each",
+      "describe", "insulate", "expose", "it", "pending", "before_each", "after_each", "match",
       "lazy_setup", "lazy_teardown", "strict_setup", "strict_teardown", "setup", "teardown",
-      "context", "spec", "test", "assert", "spy", "mock", "stub", "finally"
+      "context", "spec", "test", "assert", "spy", "mock", "stub", "finally", "randomize"
    }
 }
 
-builtin_standards.love = require "luacheck.love_standard"
+builtin_standards.love = love
 
 builtin_standards.rockspec = {
    globals = {
