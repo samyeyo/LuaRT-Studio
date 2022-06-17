@@ -6,7 +6,7 @@
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
 [![LuaRT Studio license](https://badgen.net/badge/License/MIT/green)](#license)
 
-Lua IDE for Windows
+**Lua IDE for Windows**
   
 [Features](#features) |
 [Installation](#installation) |
