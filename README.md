@@ -10,8 +10,12 @@ Lua IDE for Windows
   
 [Features](#features) |
 [Installation](#installation) |
-[Links](#links) |
-[License](#license)
+[Documentation](#documentation) |
+[Usage](#usage) |
+[Author](#author) |
+[License](#license) |
+[Links](#links)
+
 
 </div>
 
@@ -34,7 +38,7 @@ LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, ba
 
 ## Installation
 
-The IDE can be **installed into and run from any directory**. There are three options to install it:
+The IDE can be **installed into and run from any directory**. There are two options to install it:
 
 * Download [snapshot of the repository for each of the releases](https://github.com/samyeyo/LuaRT-Studio/).
 * Clone the repository to access the current development version.
@@ -43,7 +47,7 @@ The IDE can be **installed into and run from any directory**. There are three op
 
 ## Documentation
 
-* No specific documentation for now, as most of the original ZeroBrane Studio documentation should apply for LuaRT Studio
+* No specific documentation available for now, as most of the original ZeroBrane Studio documentation should apply for LuaRT Studio.
 
 ## Usage
 
@@ -68,8 +72,7 @@ passed to the second instance will trigger opening of that directory and file(s)
 
 ### LuaRT studio
 
-  **LuaRT:** Samir Tine (samir.tine@luart.rog)
-
+  **LuaRT:** Samir Tine (samir.tine@luart.org)
 
 ### ZeroBrane Studio and MobDebug
 
@@ -78,7 +81,6 @@ passed to the second instance will trigger opening of that directory and file(s)
 ## License
 
 See [LICENSE](LICENSE).
-
 
 ## Links
   
