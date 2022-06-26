@@ -1,14 +1,12 @@
 <div align="center">
 
-![LuaRT Studio][title] 
+**Lua IDE for Windows**
 
 [![Lua VM 5.4.4](https://badgen.net/badge/Lua%20VM/5.4.4/yellow)](https://www.lua.org/)
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
 [![LuaRT Studio license](https://badgen.net/badge/License/MIT/green)](#license)
 
 ![Demo][demo] 
-
-**Lua IDE for Windows**
   
 [Features](#features) |
 [Installation](#installation) |
@@ -90,5 +88,4 @@ See [LICENSE](LICENSE).
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
 
-[title]: studio/res/studio.png
-[demo]: studio.luart.org/img/ide.png
+[demo]: www.luart.org/img/ide.png
