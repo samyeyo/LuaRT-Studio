@@ -210,11 +210,9 @@ function console:Print(...) return DisplayShell(...) end
 function console:Write(...) return shellPrint(OUTPUT_MARKER, concat("", ...), false) end
 function console:Error(...) return DisplayShellErr(...) end
 
-local function filterTraceError(err, addedret)
-  local err = err:match("(.-:%d+:.-)\n[^\n]*\n[^\n]*\n[^\n]*src/editor/shellbox.lua:.*in function 'executeShellCode'")
-              or err
-        err = err:gsub("stack traceback:.-\n[^\n]+\n?","")
-        if addedret then err = err:gsub('^%[string "return ', '[string "') end
+local function filterTraceError(err, addedret)     
+          err = err:gsub('^%[.-%]:%d-:%s', "") --end
+          ide:Print(err)
         err = err:match("(.*)\n[^\n]*%(tail call%): %?$") or err
   return err
 end
@@ -308,7 +306,58 @@ end
 
 local function packResults(status, ...) return status, {...} end
 
-local function executeShellCode(tx)
+local ffi = require "ffi"
+local lua54 = require 'state'
+local L = lua54.luaL_newstate();
+lua54.luaL_openlibs(L)
+
+local function lua_pop(n)
+  lua54.lua_settop(L, -n-1)
+end
+
+local function lua_getstring(idx)
+  local idx = idx or -1
+	local len = ffi.new("unsigned int[1]", 0)
+	local str = ffi.string(lua54.lua_tolstring(L, idx, len), len[0])
+  if idx == -1 then
+    lua_pop(1)
+  end
+	return str
+end
+
+lua54.lua_pushcclosure(L, function (l) shellPrint(OUTPUT_MARKER, "\t"..lua_getstring(1), true) return 0 end, 0)
+lua54.lua_setglobal(L, "print")
+
+local function loadchunk(str) 
+	if lua54.luaL_loadstring(L, str) ~= lua54.LUA_OK then
+		return nil, lua_getstring()
+	end
+	lua54.lua_setglobal(L, "callfunc")
+	return true
+end
+
+local function lua_dostring(str)
+	if lua54.luaL_loadstring(L, str) == lua54.LUA_OK then
+    return lua54.lua_pcallk(L, 0, 1, 0, 0, nil) == 0
+  end
+  return false
+end
+
+function console.getvalue(str)
+  if lua_dostring("return "..str) then
+    return lua_getstring()
+  end
+end
+
+-- local f = io.open("lualibs/serpent.lua", "r")
+-- lua_dostring(f:read("*all"))
+-- f:close()
+local f = io.open("lualibs/pretty.lua", "r")
+lua_dostring(f:read("*all"))
+f:close()
+
+
+local function execute_original(tx)
   if tx == nil or tx == '' then return end
 
   local forcelocalprefix = '^!'
@@ -375,6 +424,84 @@ local function executeShellCode(tx)
   end
 end
 
+local function executeShellCode(tx, ismacro)
+  if tx == nil or tx == '' then return end
+
+  if ismacro == true then
+    return execute_original(tx)
+  end
+  
+  local forcelocalprefix = '^!'
+  local forcelocal = tx:find(forcelocalprefix)
+  tx = tx:gsub(forcelocalprefix, '')
+
+  DisplayShellPrompt('')
+
+  -- try to compile as statement
+  local _, err = loadchunk(tx)
+  local isstatement = not err
+
+  if remotesend and not forcelocal then remotesend(tx, isstatement); return end
+
+  local addedret, forceexpression = true, tx:match("^%s*=%s*")
+  tx = tx:gsub("^%s*=%s*","")
+  local fn
+  fn, err = loadchunk("return "..tx)
+  if not forceexpression and err then
+    fn, err = loadchunk(tx)
+    addedret = false
+  end
+  if fn == nil and err then
+    DisplayShellErr(filterTraceError(err, addedret))
+  elseif fn == true then
+    -- 308setfenv(fn,env)
+
+    -- set the project dir as the current dir to allow "require" calls
+    -- to work from shell
+    local projectDir, cwd = ide:GetProject(), nil
+    if projectDir and #projectDir > 0 then
+      cwd = wx.wxFileName.GetCwd()
+      wx.wxFileName.SetCwd(projectDir)
+    end
+	if lua_dostring("return pretty(callfunc(), {nocode = false, comment = false, indent='\t'})") == false then
+		DisplayShellErr(filterTraceError(lua_getstring(), addedret))
+	else
+    local result = lua_getstring()
+    if result == "nil" and (forceexpression or isstatement) then
+      result = ""
+    end
+		DisplayShell(result)
+	end
+
+    -- local ok, res = packResults(xpcall(fn,
+      -- function(err)
+        -- DisplayShellErr(filterTraceError(debug.traceback(err), addedret))
+      -- end))
+
+    -- restore the current dir
+    if cwd then wx.wxFileName.SetCwd(cwd) end
+    
+    -- if ok and (addedret or #res > 0) then
+      -- if addedret then
+        -- local mobdebug = require "mobdebug"
+        -- for i,v in pairs(res) do -- stringify each of the returned values
+          -- res[i] = (forceexpression and i > 1 and '\n' or '') ..
+            -- mobdebug.line(v, {nocode = true, comment = 1,
+              -- -- if '=' is used, then use multi-line serialized output
+              -- indent = forceexpression and '  ' or nil})
+        -- end
+        -- -- add nil only if we are forced (using =) or if this is not a statement
+        -- -- this is needed to print 'nil' when asked for 'foo',
+        -- -- and don't print it when asked for 'print(1)'
+        -- if #res == 0 and (forceexpression or not isstatement) then
+          -- res = {'nil'}
+        -- end
+      -- end
+      -- displayshell(unpack(res))
+    -- end
+  end
+end
+
 function console:GetRemote() return remotesend end
 function console:SetRemote(client)
   remotesend = client
@@ -393,24 +520,18 @@ function ShellExecuteFile(wfilename)
 end
 
 ShellExecuteInline = executeShellCode
-function ShellExecuteCode(code)
+function ShellExecuteCode(code, ismacro)
   local index = bottomnotebook:GetPageIndex(bottomnotebook.shellbox)
   if ide.config.activateoutput and bottomnotebook:GetSelection() ~= index then
     bottomnotebook:SetSelection(index)
   end
-
   displayShellDirect(code)
-  executeShellCode(code)
+  executeShellCode(code, ismacro)
 end
 
 local function displayShellIntro()
-  DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").." "
-    ..TR("Enter Lua code and press Enter to run it.").." "
-    ..TR("Use Shift-Enter for multiline code.").."\n"
-    ..TR("Use 'clear' to clear the shell output and the history.").." "
-    ..TR("Use 'reset' to clear the environment.").."\n"
-    ..TR("Prepend '=' to show complex values on multiple lines.").." "
-    ..TR("Prepend '!' to force local execution."))
+  DisplayShellMsg(TR("Welcome to the interactive Lua 5.4 interpreter").."\n"
+    ..TR("Use 'help' to display the local console help.").."\n")
   DisplayShellPrompt('')
 end
 
@@ -511,6 +632,15 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         elseif promptText == 'reset' then
           console:Reset()
           setPromptText("")
+        elseif promptText == 'help' then
+          displayShellDirect('\n')
+          DisplayShellPrompt('')
+          DisplayShell(TR("\tEnter Lua code and press Enter to run it.").."\n"
+            ..TR("\tUse Shift-Enter for multiline code.").."\n\n"
+            ..TR("\tUse 'clear' to clear the shell output and the history.").."\n"
+            ..TR("\tUse 'reset' to clear the environment.").."\n\n"
+            ..TR("\tPrepend '=' to show complex values on multiple lines.").."\n"
+            ..TR("\tPrepend '!' to force local execution."))  
         else
           displayShellDirect('\n')
           executeShellCode(promptText)
@@ -600,4 +730,11 @@ end
 
 function console:Reset()
   env = createenv() -- recreate the environment to "forget" all changes in it
+end
+
+function console:Shutdown()
+  if lua54 ~= nil then
+    lua54.lua_close(L)
+    L = nil    
+  end
 end
