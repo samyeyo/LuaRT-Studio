@@ -22,6 +22,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+LuaRT Studio uses the following products/projects :
+
+--[[ Microsoft vscode-icons License ]]-------------------------------------------
+
+Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/deed.en
+
+Creative Commons Corporation ("Creative Commons") is not a law firm and
+does not provide legal services or legal advice. Distribution of
+Creative Commons public licenses does not create a lawyer-client or
+other relationship. Creative Commons makes its licenses and related
+information available on an "as-is" basis. Creative Commons gives no
+warranties regarding its licenses, any material licensed under their
+terms and conditions, or any related information. Creative Commons
+disclaims all liability for damages resulting from their use to the
+fullest extent possible.
+
+--[[ FiraCode Retina Font License ]]-------------------------------------------
+
+Designed by The Mozilla Foundation, Telefonica S.A., Nikita Prokopov
+These fonts are licensed under the Open Font License.
+You can use them in your products & projects – print or digital, commercial or otherwise.
+This isn't legal advice, please consider consulting a lawyer and see the full license for all details.
+
+--[[ DejaVu Fonts License ]]-------------------------------------------
+
+Fonts are © Bitstream. DejaVu changes are in public domain.
+Explanation of copyright is on Gnome page on Bitstream Vera fonts.
+Glyphs imported from Arev fonts are © Tavmjung Bah 
+
 --[[ ZeroBrane Studio License ]]-------------------------------------------
 
 ZeroBrane Studio sources are released under the MIT License
