@@ -1,3 +1,22 @@
+# LuaRT Studio Changelog
+
+## v1.0 (Jun 26 2022)
+
+### Highlights
+  - First release of LuaRT Studio, a Windows Lua 5.4 and LuaRT IDE based on ZeroBrane Studio
+  - Bundled with a specific LuaRT interpreter, compatible with standard Lua 5.4.4
+  - Automatic switch between Lua console or desktop application based on file extension (.lua and .wlua respectively)
+  - Updated UI, using current Windows UI theme, icons for files, tabs, and panels.
+  - Rework of the "Outline" tab, now called "Symbols" (displays local and global variables, new icons, table expansion...)
+  - Icons for variables in Watch panel and Stack panel, based on their type
+  - Support for using ttf font files in studio/res/fonts
+  - LuaCheck updated to 0.26
+  - Updated mobdebug to support LuaRT objects.
+  - New project option to Show/Hide console window.
+  - Local console now uses Lua 5.4.4
+  - Project panel updated to use file icons
+  
+------------------------------------------------------------------------------------
 # ZeroBrane Studio Changelog
 
 ## v1.90 (Feb 09 2020)
