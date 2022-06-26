@@ -2,7 +2,7 @@
 
 ## v1.0 (Jun 26 2022)
 
-### Highlights
+### Highlights & Improvements
   - First release of LuaRT Studio, a Windows Lua 5.4 and LuaRT IDE based on ZeroBrane Studio
   - Bundled with a specific LuaRT interpreter, compatible with standard Lua 5.4.4
   - Automatic switch between Lua console or desktop application based on file extension (.lua and .wlua respectively)
