@@ -35,7 +35,7 @@ menuBar:Append(helpMenu, ide.osname == 'Macintosh' and "&Help" or TR("&Help"))
 local function displayAbout(event)
   local logo = ide:GetAppName().."/"..ide:GetProperty("logo")
   local logoimg = wx.wxFileName(logo):FileExists() and
-    ([[<tr><td><img src="%s"></td></tr>]]):format(logo) or ""
+    ([[<tr><td><center><img src="%s"></center></td></tr>]]):format(logo) or ""
   local ed = ide:GetEditor() or ide:CreateBareEditor()
   local page = ([[
     <html>
@@ -46,11 +46,19 @@ local function displayAbout(event)
 	<table cellspacing="3" cellpadding="3" width="100%%">
 	  <tr>
 		<td>
-		<b>ZeroBrane Studio (%s; MobDebug %s)</b><br>
+		<b>LuaRT Studio (%s)</b><br>
+		<b>Copyright &copy; 2022 Samir Tine</b><br>
+		Licensed under the MIT License.
+		</td>
+	  </tr>
+	  <tr>
+		<td>
+		<b>Based on ZeroBrane Studio (%s; MobDebug %s)</b><br>
 		<b>Copyright &copy; 2011-2021 ZeroBrane LLC</b><br>
 		Paul Kulchenko<br>
 		Licensed under the MIT License.
 		</td>
+    <td><img align="right" src="%s/res/zerobrane.png"></td>
 	  </tr>
 	  <tr>
 		<td>
@@ -78,7 +86,7 @@ local function displayAbout(event)
 	</td></tr></table>
       </body>
     </html>]])
-  :format(logoimg, ide.VERSION, mobdebug._VERSION, table.concat({
+  :format(logoimg, ide.frame.bottomnotebook.shellbox.getvalue("_VERSION").." "..ide.frame.bottomnotebook.shellbox.getvalue("_ARCH"), ide.VERSION, mobdebug._VERSION, ide:GetAppName(), table.concat({
       wx.wxVERSION_STRING,
       wxlua.wxLUA_VERSION_STRING,
       ide:IsValidProperty(ed, "GetLibraryVersionInfo") and ed:GetLibraryVersionInfo():GetVersionString() or nil,
