@@ -38,9 +38,10 @@ LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, ba
 
 ## Installation
 
-The IDE can be **installed into and run from any directory**. There are two options to install it:
+The IDE can be **installed into and run from any directory**. There are three options to install it:
 
-* Download [snapshot of the repository for each of the releases](https://github.com/samyeyo/LuaRT-Studio/).
+* Download a [current snapshot of the repository](https://github.com/samyeyo/LuaRT-Studio/).
+* Download the [last release](https://github.com/samyeyo/LuaRT-Studio/releases/).
 * Clone the repository to access the current development version.
 
 **No compilation is needed** for any of the installation options, although the script to compile "LuaRT Studio.exe" executable is available in the build\ directory.
