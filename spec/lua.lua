@@ -255,18 +255,18 @@ return {
     [[and break do else elseif end for function goto if in local not or repeat return then until while]],
 
     -- constants/variables
-    [[_G _VERSION _ENV false io.stderr io.stdin io.stdout nil math.huge math.pi self true package.cpath package.path]],
+    [[_G _VERSION _ARCH _ENV false console.stderr io.stderr console.stdin io.stdin console.stdout io.stdout nil math.huge math.pi self true package.cpath package.path]],
 
     -- core/global functions
     [[assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring
-      module next pairs pcall print rawequal rawget rawlen rawset require
+      next pairs pcall print rawequal rawget rawlen rawset require
       select setfenv setmetatable tonumber tostring type unpack xpcall]],
 
     -- library functions
-    [[bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract
-      bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift
+    [[Object sys.Buffer sys.COM sys.File sys.Directory sys.registry sys.env sys.Pipe sys.Datetime sys.clock sys.exit sys.sleep sys.cmd sys.halt
+      sys.tempfile sys.error sys.currentdir sys.clipboard zip.isvalid zip.Zip
       coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield
-      coroutine.isyieldable
+      coroutine.isyieldable coroutine.close
       debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal
       debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv
       debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue
