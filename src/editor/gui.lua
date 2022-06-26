@@ -663,9 +663,10 @@ local function createBottomNotebook(frame)
   -- connect to the main frame, so it can be called from anywhere
   frame:Connect(ID.CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ide:GetConsole():Erase() end)
-  local bmp = ide:GetBitmap("OUTPUT", "PRINT", wx.wxSize(16, 16))
+  local iconsize = ide:GetBestIconSize()
+  local bmp = ide:GetBitmap("OUTPUT", "PRINT", wx.wxSize(iconsize, iconsize))
   bottomnotebook:AddPage(errorlog, TR("Output"), true, bmp)
-  bmp = ide:GetBitmap("OUTPUT", "CONSOLE", wx.wxSize(16, 16))
+  bmp = ide:GetBitmap("OUTPUT", "CONSOLE", wx.wxSize(iconsize, iconsize))
   bottomnotebook:AddPage(shellbox, TR("Local console"), false, bmp)
   bottomnotebook.errorlog = errorlog
   bottomnotebook.shellbox = shellbox

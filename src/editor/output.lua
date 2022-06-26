@@ -234,6 +234,13 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     cmd = cmd:gsub([[^(['"]?)~]], '%1'..ide.oshome:gsub('[\\/]$',''), 1)
   end
 
+  local flagconsole = wx.wxEXEC_HIDE_CONSOLE
+
+  if ide.interpreter.name == 'Console' and frame.menuBar:IsChecked(ID_SHOWCONSOLE) then
+    tooutput = false
+    nohide = true
+    flagconsole = 2
+  end
   -- try to extract the name of the executable from the command
   -- the executable may not have the extension and may be in quotes
   local exename = string.gsub(cmd, "\\", "/")
@@ -244,12 +251,12 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   uid = uid or exename
 
   if (CommandLineRunning(uid)) then
-    DisplayOutputLn(TR("Program can't start because conflicting process is running as '%s'.")
+    DisplayOutputLn(TR("Program can't start because conflicting process is running as %s applicatiob.")
       :format(cmd))
     return
   end
 
-  DisplayOutputLn(TR("Program starting as '%s'."):format(cmd))
+  DisplayOutputLn(TR("Program starting as %s application."):format(ide.interpreter.name))
 
   local proc = wx.wxProcess(out)
   if (tooutput) then proc:Redirect() end -- redirect the output if requested
@@ -262,7 +269,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   end
 
   -- launch process
-  local params = wx.wxEXEC_ASYNC + wx.wxEXEC_MAKE_GROUP_LEADER + wx.wxEXEC_NOHIDE 
+  local params = wx.wxEXEC_ASYNC + wx.wxEXEC_MAKE_GROUP_LEADER + wx.wxEXEC_NOHIDE + flagconsole
   local pid = wx.wxExecute(cmd, params, proc)
 
   if oldcwd then wx.wxFileName.SetCwd(oldcwd) end
@@ -272,7 +279,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   -- The return value of -1 in this case indicates that we didn't launch
   -- a new process, but connected to the running one (e.g. DDE under Windows).
   if not pid or pid == -1 or pid == 0 then
-    DisplayOutputLn(TR("Program unable to run as '%s'."):format(cmd))
+    DisplayOutputLn(TR("Program unable to run as %s application."):format(ide.interpreter.name))
     return
   end
 
