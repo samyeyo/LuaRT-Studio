@@ -6,6 +6,8 @@
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
 [![LuaRT Studio license](https://badgen.net/badge/License/MIT/green)](#license)
 
+![Demo][demo] 
+
 **Lua IDE for Windows**
   
 [Features](#features) |
@@ -89,3 +91,4 @@ See [LICENSE](LICENSE).
 - [LuaRT Documentation](http://www.luart.org/doc)
 
 [title]: studio/res/studio.png
+[demo]: studio.luart.org/img/ide.png
