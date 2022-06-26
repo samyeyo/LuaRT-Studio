@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.801",
+  _VERSION = "0.802",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -55,7 +55,14 @@ local MOAICoroutine = rawget(genv, "MOAICoroutine")
 -- methods use a different mechanism that doesn't allow resume calls
 -- from debug hook handlers.
 -- Instead, the "original" coroutine.* methods are used.
+-- `rawget` needs to be used to protect against `strict` checks
 local ngx = rawget(genv, "ngx")
+if not ngx then
+  -- "older" versions of ngx_lua (0.10.x at least) hide ngx table in metatable,
+  -- so need to use that
+  local metagindex = getmetatable(genv) and getmetatable(genv).__index
+  ngx = type(metagindex) == "table" and metagindex.rawget and metagindex:rawget("ngx") or nil
+end
 local corocreate = ngx and coroutine._create or coroutine.create
 local cororesume = ngx and coroutine._resume or coroutine.resume
 local coroyield = ngx and coroutine._yield or coroutine.yield
@@ -172,6 +179,7 @@ local function s(t, opts)
            < (k[b] ~= nil and 0 or to[type(b)] or 'z')..(tostring(b):gsub("%d+",padnum)) end) end
   local function val2str(t, name, indent, insref, path, plainindex, level)
     local ttype, level, mt = type(t), (level or 0), getmetatable(t)
+    local obj = mt and mt.__type or tostring(t)
     local spath, sname = safename(path, name)
     local tag = plainindex and
       ((type(name) == "number") and '' or name..space..'='..space) or
@@ -180,19 +188,33 @@ local function s(t, opts)
       sref[#sref+1] = spath..space..'='..space..seen[t]
       return tag..'nil'..comment('ref', level) end
     -- protect from those cases where __tostring may fail
-    if type(mt) == 'table' and metatostring ~= false then
-      local to, tr = pcall(function() return mt.__tostring(t) end)
-      local so, sr = pcall(function() return mt.__serialize(t) end)
-      if (to or so) then -- knows how to serialize itself
-        seen[t] = insref or spath
-        t = so and sr or tr
-        ttype = type(t)
-      end -- new value falls through to be serialized
+    if mt and type(mt) == 'table' and metatostring ~= false then
+      if mt.__type == nil and mt.__properties == nil then
+        local to, tr = pcall(function() return mt.__tostring(t) end)
+        local so, sr = pcall(function() return mt.__serialize(t) end)
+        if (to or so) then -- knows how to serialize itself
+          seen[t] = insref or spath
+          t = so and sr or tr
+          ttype = type(t)
+        end -- new value falls through to be serialized
+      else
+        local fields = mt.__type or mt.__properties
+        for k, v in pairs(fields) do
+          local prop = k:match("^([gs])et_")
+          if prop ~= nil then
+            if prop == "g" then
+              rawset(t, "property_"..k, v(t))
+            end
+          else
+            rawset(t, k, v)
+          end
+        end
+      end
     end
     if ttype == "table" then
       if level >= maxl then return tag..'{}'..comment('maxlvl', level) end
       seen[t] = insref or spath
-      if next(t) == nil then return tag..'{}'..comment(t, level) end -- table empty
+      if next(t) == nil and mt and (mt.__type == nil and mt.__properties == nil) then return tag..'{}'..comment(t, level) end -- table empty
       if maxlen and maxlen < 0 then return tag..'{}'..comment('maxlen', level) end
       local maxn, o, out = math.min(#t, maxnum or #t), {}, {}
       for key = 1, maxn do o[key] = key end
@@ -229,13 +251,15 @@ local function s(t, opts)
       local head = indent and '{\n'..prefix..indent or '{'
       local body = table.concat(out, ','..(indent and '\n'..prefix..indent or space))
       local tail = indent and "\n"..prefix..'}' or '}'
-      return (custom and custom(tag,head,body,tail,level) or tag..head..body..tail)..comment(t, level)
+      return (custom and custom(tag,head,body,tail,level) or tag..head..body..tail)..comment(obj, level)
     elseif badtype[ttype] then
       seen[t] = insref or spath
       return tag..globerr(t, level)
     elseif ttype == 'function' then
       seen[t] = insref or spath
-      if opts.nocode then return tag.."function() --[[..skipped..]] end"..comment(t, level) end
+      if opts.nocode then 
+        return tag.."function() --[[..skipped..]] end"..comment(t, level)
+      end
       local ok, res = pcall(string.dump, t)
       local func = ok and "((loadstring or load)("..safestr(res)..",'@serialized'))"..comment(t, level)
       return tag..(func or globerr(t, level))

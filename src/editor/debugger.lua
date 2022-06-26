@@ -25,9 +25,10 @@ debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
   return hostname and socket.dns.toip(hostname) and hostname or "localhost"
 end)()
-debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP", "VALUE-TABLE", "VALUE-FUNCTION", "VALUE-OBJECT", "VALUE-STRING", "VALUE-NUMBER", "VALUE-INSTANCE")
-
-local image = { STACK = 0, LOCAL = 1, UPVALUE = 2, TABLE = 3, FUNCTION = 4, OBJECT = 5, STRING = 6, NUMBER = 7, INSTANCE = 8}
+debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP", "VALUE-TABLE", "VALUE-FUNCTION", "VALUE-OBJECT", "VALUE-STRING", "VALUE-NUMBER", "VALUE-INSTANCE", "VALUE-MODULE", "VALUE-BOOL", "VALUE-PROPERTY")
+local type_img = { ["table"] = 3, ["Object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7, ['instance'] = 8, ['module'] = 1, ["boolean"] = 10, ["property"] = 11, ["nil"] = -1 }
+local image = { STACK = 0, LOCAL = 1, UPVALUE = 2, TABLE = 3, FUNCTION = 4, OBJECT = 5, STRING = 6, NUMBER = 7, INSTANCE = 8, MODULE = 9, BOOL = 10, PROPERTY = 11}
+local globals_mod = { ["io"] = true, ["os"] = true, ["sys"] = true, ["console"] = true, ["crypto"] = true, ["net"] = true, ["zip"] = true, ["ui"] = true}
 local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
@@ -68,10 +69,6 @@ function debugger:updateWatchesSync(onlyitem)
   local canupdate = (debugger.server and not debugger.running and not debugger.scratchpad
     and not (debugger.options or {}).noeval)
   if shown and canupdate then
-    local bgcl = watchCtrl:GetBackgroundColour()
-    local hicl = wx.wxColour(math.floor(bgcl:Red()*.9),
-      math.floor(bgcl:Green()*.9), math.floor(bgcl:Blue()*.9))
-
     local root = watchCtrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
@@ -79,27 +76,63 @@ function debugger:updateWatchesSync(onlyitem)
     local item = onlyitem or watchCtrl:GetFirstChild(root)
     while true do
       if not item:IsOk() then break end
-
       local expression = watchCtrl:GetItemExpression(item)
       if expression then
-        local _, values, error = debugger:evaluate(expression, params)
+        _, values, err = debugger:evaluate(expression, {maxlevel = 1})
         local curchildren = watchCtrl:GetItemChildren(item)
-        if error then
-          error = error:gsub("%[.-%]:%d+:%s+","")
+        if err then
+          err = err:gsub("%[.-%]:%d+:%s+","")
           watchCtrl:SetItemValueIfExpandable(item, nil)
         else
           if #values == 0 then values = {'nil'} end
           local _, res = LoadSafe("return "..values[1])
           watchCtrl:SetItemValueIfExpandable(item, res)
         end
-
-        local newval = fixUTF8(expression .. ' = '
-          .. (error and ('error: '..error) or table.concat(values, ", ")))
+        local valstr = table.concat(values, ", ")
+        local temp = valstr:gsub("%{.*}", "")
+        local image
+        local complex = false
+        local _type = valstr:match("%[%[(%w+)%: ")  
+        if _type ~= nil then
+          if _type == "table" then            
+            _type = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            if _type == nil then
+              image = "table"
+              _type = image
+            else
+              image = "Object"
+              complex = true
+            end
+          elseif _type == "Object" then
+            local _, values, err = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            _type = values[1]
+            if debugger:evaluate("getmetatable("..expression..").__call", {maxlevel = 1}) ~= nil then
+              image = "Object"
+            else
+              image = "instance"
+            end
+            complex = true
+          else
+            _type = globals_mod[_type] and "module" or _type
+          end 
+        else
+          _type = debugger:evaluate("type("..valstr..")", {maxlevel = 1})
+        end
+        _type = _type ~= nil and _type:match('%w+') or _type
+        local newval
+        if complex then
+          newval = fixUTF8(expression ..(err and (' error: '..err) or  ' <'.._type..'>'))
+        elseif _type == "function" then
+          newval = expression.."()"
+        elseif _type == "table" or _type == "module" then
+            newval = expression
+        else
+          newval = fixUTF8(expression .. ' = '.. (err and ('error: '..err) or valstr))
+        end
         local val = watchCtrl:GetItemText(item)
-
-        watchCtrl:SetItemBackgroundColour(item, val ~= newval and hicl or bgcl)
         watchCtrl:SetItemText(item, newval)
-
+        image = image or _type or "nil"
+        watchCtrl:SetItemImage(item, type_img[image])
         if onlyitem or val ~= newval then
           local newchildren = watchCtrl:GetItemChildren(item)
           if next(curchildren) ~= nil and next(newchildren) == nil then
@@ -143,7 +176,7 @@ function debugger:updateStackSync()
     stackCtrl:DeleteAll()
 
     local forceexpand = ide.config.debugger.maxdatalevel == 1
-    local params = debugger:GetDataOptions({maxlevel=false})
+    local params = debugger:GetDataOptions({maxlevel=1})
     local maxlen = tonumber(ide.config.debugger.maxdatalength)
 
     local root = stackCtrl:AddRoot("Stack")
@@ -473,7 +506,7 @@ function debugger:shell(expression, isstatement)
   and (not debugger.scratchpad or debugger.scratchpad.paused) then
     -- default options for shell commands
     local params = debugger:GetDataOptions({
-        comment=true, maxlength=false, maxlevel=false, numformat=false})
+        comment=true, maxlength=false, maxlevel=1, numformat=false})
     -- any explicit options for this command
     for k, v in pairs(loadstring("return"..(expression:match("--%s*(%b{})%s*$") or "{}"))()) do
       params[k] = v
@@ -1192,7 +1225,7 @@ local function debuggerCreateStackWindow()
 
   function stackCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
-  local type_img = { ["table"] = 3, ["object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7}
+  local stacktype_img = { ["table"] = 3, ["object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7}
   function stackCtrl:GetImageFromValue(value)
     -- local value = value or self:GetItemChildren(self:GetItemParent(item))[self:GetItemText(item)]
     local image
@@ -1208,7 +1241,7 @@ local function debuggerCreateStackWindow()
           image = 3
         end
       else
-        image = type_img[t]
+        image = stacktype_img[t]
       end
     else
       image = -1
@@ -1297,7 +1330,7 @@ local function debuggerCreateStackWindow()
             local parent = self:GetItemParent(item)
             valuecache[parent:GetValue()][name] = res
 
-            local params = debugger:GetDataOptions({maxlevel=false})
+            local params = debugger:GetDataOptions({maxlevel=1})
 
             -- now update all serialized values in the tree starting from the expanded item
             while item:IsOk() and not self:IsFrame(item) do
@@ -1327,7 +1360,7 @@ local function debuggerCreateStackWindow()
 
       local image = stackCtrl:GetItemImage(item_id)
       local num, maxnum = 1, ide.config.debugger.maxdatanum
-      local params = debugger:GetDataOptions({maxlevel = false})
+      local params = debugger:GetDataOptions({maxlevel = 1})
 
       stackCtrl:Freeze()
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
@@ -1359,7 +1392,7 @@ local function debuggerCreateStackWindow()
       if val ~= nil then
         local t
         local image = stackCtrl:GetItemImage(item_id, wx.wxTreeItemIcon_Normal)
-        for k, v in pairs(type_img) do
+        for k, v in pairs(stacktype_img) do
           if v == image then
               t = k
             break
@@ -1402,18 +1435,18 @@ local function debuggerCreateStackWindow()
   end)
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
+  local iconsize = ide:GetBestIconSize()
   if layout and not layout:find("stackpanel") then
-    ide:AddPanelDocked(ide.frame.bottomnotebook, stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(16, 16)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
+    ide:AddPanelDocked(ide.frame.bottomnotebook, stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(iconsize, iconsize)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
   else
-    ide:AddPanel(stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(16, 16)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
+    ide:AddPanel(stackCtrl, "stackpanel", TR("Stack"), nil, ide:GetBitmap("DEBUG", "CALLSTACK", wx.wxSize(iconsize, iconsize)))--wx.wxBitmap("studio/res/16/DEBUG-CALLSTACK.png"))
   end
 end
 
 local function debuggerCreateWatchWindow()
   local watchCtrl = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height),
-    wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE
-    + wx.wxTR_HIDE_ROOT + wx.wxTR_EDIT_LABELS + wx.wxNO_BORDER)
+    wx.wxTR_SINGLE + wx.wxTR_HAS_BUTTONS + wx.wxTR_NO_LINES + wx.wxTR_TWIST_BUTTONS + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   local debugger = ide:GetDebugger()
   debugger.watchCtrl = watchCtrl
@@ -1426,7 +1459,11 @@ local function debuggerCreateWatchWindow()
 
   function watchCtrl:SetItemExpression(item, expr, value)
     expressions[item:GetValue()] = expr
-    self:SetItemText(item, expr .. ' = ' .. (value or '?'))
+    if value and value:sub(1,1) == "{" then
+      self:SetItemText(item, expr)
+    else
+      self:SetItemText(item, expr.." = "..tostring(value))
+    end
     self:SelectItem(item, true)
     local debugger = ide:GetDebugger()
     if not value then debugger:updateWatches(item) end
@@ -1564,21 +1601,31 @@ local function debuggerCreateWatchWindow()
             end
 
             -- update cache in the parent
-            local parent = self:GetItemParent(item)
-            valuecache[parent:GetValue()][name] = res
+            -- local parent = self:GetItemParent(item)
+            -- valuecache[parent:GetValue()][name] = res
 
-            local params = debugger:GetDataOptions({maxlevel=false})
-
+            local params = debugger:GetDataOptions({maxlevel=1})
             -- now update all serialized values in the tree starting from the expanded item
             while item:IsOk() do
               local value = valuecache[item:GetValue()]
-              local strval = fixUTF8(serialize(value, params))
               local name = self:GetItemName(item)
-              local text = (self:IsWatch(item)
-                and self:GetItemExpression(item).." = "
-                or stringifyKeyIntoPrefix(name, self:GetItemPos(item)))
-              ..strval
-              self:SetItemText(item, text)
+              ide:Print(name, value)
+--              local strval = fixUTF8(type(value) ~= "string" and tostring(value) or '"'..value..'"')--serialize(value, params))
+--              local _type = strval:match("^(%w+):") or false
+--              local image = false
+--              if _type then
+--                if type_img[_type:lower()] == nil then
+--                  _type = globals_mod[_type] and "module" or "instance"
+--                end
+--                strval = " <"..strval..">"
+--              else
+--                _type = load("return type("..strval..")")()
+--                strval = ' = '..strval
+--              end
+              self:SetItemText(item, name..strval)
+              if _type and type_img[_type] ~= nil then
+                self:SetItemImage(item, type_img[_type])
+              end
               if self:IsWatch(item) then break end
               item = self:GetItemParent(item)
             end
@@ -1596,21 +1643,60 @@ local function debuggerCreateWatchWindow()
 
       if watchCtrl:IsExpandable(item_id) then return watchCtrl:ExpandItemValue(item_id) end
 
-      local image = watchCtrl:GetItemImage(item_id)
       local num, maxnum = 1, ide.config.debugger.maxdatanum
-      local params = debugger:GetDataOptions({maxlevel = false})
+      local params = debugger:GetDataOptions({maxlevel = 1})
 
       watchCtrl:Freeze()
+      local properties = {}
       for name,value in pairs(watchCtrl:GetItemChildren(item_id)) do
-        local item = watchCtrl:AppendItem(item_id, "", image)
-        watchCtrl:SetItemValueIfExpandable(item, value, true)
-
-        local strval = watchCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
-        watchCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
-        watchCtrl:SetItemName(item, name)
-
+        local image
+        local complex = false
+        local _type = type(value):match("(%w+)")
+        if _type ~= nil then
+          if _type == "table" then
+            _type = (getmetatable(value) or {}).__name
+            if _type == nil then
+              image = "table"
+              _type = image
+            else
+              image = "Object"
+              complex = true
+            end
+          elseif _type == "Object" then
+            _type = getmetatable(value).__name
+            image = "instance"
+            complex = true
+          else
+            _type = globals_mod[_type] and "module" or _type
+          end   
+	end         
+        _type = _type ~= nil and _type:match('%w+') or _type
+        local newval
+        if complex then
+          newval = fixUTF8(name..' <'.._type..'>')
+        elseif _type == "function" then
+          local i = watchCtrl:GetItemImage(item_id)
+          newval = name.."()"
+        elseif _type == "table" or _type == "module" then
+          newval = name
+        elseif _type == "string" and value:match("^Object: ") then
+          newval = name
+          image = "Object"        
+        else
+          newval = fixUTF8(name .. ' = '..serialize(value))
+        end
+        if name:find("^property_get_") then
+          newval = fixUTF8(name:gsub("^property_get_", "") .. ' = '..serialize(value):gsub("%-%-%[%[.-%]%]", ""))
+          image = "property"
+        end
+        local item = watchCtrl:AppendItem(item_id, "", -1)
+        watchCtrl:SetItemValueIfExpandable(item, value, true)       
+        watchCtrl:SetItemText(item, newval)
+        image = image or _type or "nil"
+        watchCtrl:SetItemImage(item, type_img[image])
         num = num + 1
         if num > maxnum then break end
+	::done_property::
       end
       watchCtrl:Thaw()
       return true
@@ -1654,7 +1740,7 @@ local function debuggerCreateWatchWindow()
 
   watchCtrl:Connect(ID.ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
       watchCtrl:SetFocus()
-      watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, image.LOCAL))
+      watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, -1))
     end)
 
   watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -1723,10 +1809,11 @@ local function debuggerCreateWatchWindow()
     end)
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
+  local iconsize = ide:GetBestIconSize()
   if layout and not layout:find("watchpanel") then
-    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(16, 16)))
+    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
   else
-    ide:AddPanel(watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(16, 16)))
+    ide:AddPanel(watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
   end
 end
 
