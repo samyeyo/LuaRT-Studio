@@ -16,7 +16,6 @@
 [License](#license) |
 [Links](#links)
 
-
 </div>
 
 ## Features
@@ -88,4 +87,4 @@ See [LICENSE](LICENSE).
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
 
-[demo]: www.luart.org/ide.png
+[demo]: https://www.luart.org/ide.png
