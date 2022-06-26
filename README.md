@@ -1,11 +1,12 @@
 <div align="center">
 
-**Lua IDE for Windows**
+**LuaRT Studio**
 
 [![Lua VM 5.4.4](https://badgen.net/badge/Lua%20VM/5.4.4/yellow)](https://www.lua.org/)
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
 [![LuaRT Studio license](https://badgen.net/badge/License/MIT/green)](#license)
-
+[![Twitter Follow](https://img.shields.io/twitter/follow/__LuaRT__?style=social)](https://www.twitter.com/__LuaRT__)
+  
 ![Demo][demo] 
   
 [Features](#features) |
