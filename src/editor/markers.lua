@@ -249,10 +249,11 @@ local function createMarkersWindow()
   end
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
+  local iconsize = ide:GetBestIconSize()
   if not layout or not layout:find("markerspanel") then
-    ide:AddPanelDocked(ide:GetOutputNotebook(), ctrl, "markerspanel", TR("Markers"), reconfigure, false, ide:GetBitmap("OUTPUT", "MARKERS", wx.wxSize(16, 16)))
+    ide:AddPanelDocked(ide:GetOutputNotebook(), ctrl, "markerspanel", TR("Markers"), reconfigure, false, ide:GetBitmap("OUTPUT", "MARKERS", wx.wxSize(iconsize, iconsize)))
   else
-    ide:AddPanel(ctrl, "markerspanel", TR("Markers"), reconfigure, ide:GetBitmap("OUTPUT", "MARKERS", wx.wxSize(16, 16)))
+    ide:AddPanel(ctrl, "markerspanel", TR("Markers"), reconfigure, ide:GetBitmap("OUTPUT", "MARKERS", wx.wxSize(iconsize, iconsize)))
   end
 end
 

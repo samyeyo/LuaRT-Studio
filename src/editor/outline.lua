@@ -147,7 +147,7 @@ local function outlineRefresh(editor, force)
     if outcfg.showonefile then
       fileitem = root
     else
-      outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)))
+      outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)) or ide.filetree.imglist:GetBitmap(2))
       fileitem = ctrl:AppendItem(root, filename, image.FILE)
       setData(ctrl, fileitem, editor)
       ctrl:SetItemBold(fileitem, true)
@@ -447,10 +447,11 @@ local function createOutlineWindow()
   end
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
+  local iconsize = ide:GetBestIconSize()
   if not layout or not layout:find("outlinepanel") then
-    ide:AddPanelDocked(ide:GetProjectNotebook(), ctrl, "outlinepanel", TR("Outline"), reconfigure, false, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(16, 16)))
+    ide:AddPanelDocked(ide:GetProjectNotebook(), ctrl, "outlinepanel", TR("Symbols"), reconfigure, false, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(iconsize, iconsize)))
   else
-    ide:AddPanel(ctrl, "outlinepanel", TR("Outline"), reconfigure, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(16, 16)))
+    ide:AddPanel(ctrl, "outlinepanel", TR("Symbols"), reconfigure, ide:GetBitmap("PROJECT", "OUTLINE", wx.wxSize(iconsize, iconsize)))
   end
 end
 

@@ -76,9 +76,9 @@ function MarkupHotspotClick(pos, editor)
     if not command then _,_,command = string.find(text, [[^macro:(%w+)$]]) end
 
     if command == 'shell' then
-      ShellExecuteCode(code)
+      ShellExecuteCode(code, true)
     elseif command == 'inline' then
-      ShellExecuteInline(code)
+      ShellExecuteInline(code, true)
     elseif command == 'run' then -- run the current file
       ProjectRun()
     elseif command == 'debug' then -- debug the current file

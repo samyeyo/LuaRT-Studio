@@ -558,7 +558,6 @@ local DF_TEXT = wx.wxDataFormat(wx.wxDF_TEXT)
 function ide:CreateStyledTextCtrl(...)
   local editor = wxstc.wxStyledTextCtrl(...)
   if not editor then return end
-
   if useraw == nil then
     useraw = true
     for _, m in ipairs(rawMethods) do
@@ -993,12 +992,13 @@ function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
 end
 
 function ide:GetBestIconSize()
-  -- use large icons by default on OSX and on large screens
+  -- use large icons by default on OSX and on large screens  
   local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
   local scale = ide:GetContentScaleFactor()
-  return (iconsize and (iconsize % 8) == 0 and iconsize
+  local result = (iconsize and (iconsize % 8) == 0 and iconsize
     or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1280)
       and scale*24 or (scale>3 and 48 or scale*16)))
+  return result
 end
 
 function ide:CreateImageList(group, ...)
@@ -1009,7 +1009,7 @@ function ide:CreateImageList(group, ...)
 
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
-    if imglist:Add(icon) == -1 then
+    if icon ~= nil and imglist:Add(icon) == -1 then
       self:Print(("Failed to add image '%s' to the image list."):format(file or select(i, ...)))
     end
   end
@@ -1183,13 +1183,14 @@ function ide:AddWatch(watch, value)
   while true do
     if not item:IsOk() then break end
     if watchCtrl:GetItemExpression(item) == watch then
-      if value then watchCtrl:SetItemText(item, watch .. ' = ' .. tostring(value)) end
+      if value ~= nil then watchCtrl:SetItemText(item, watch .. ' = ' .. tostring(value)) end
+      watchCtrl:SetItemImage(item, -1)
       return item
     end
     item = watchCtrl:GetNextSibling(item)
   end
 
-  item = watchCtrl:AppendItem(root, watch, 1)
+  item = watchCtrl:AppendItem(root, watch, -1)
   watchCtrl:SetItemExpression(item, watch, value)
   return item
 end
