@@ -26,7 +26,7 @@ return {
     nomousezoom = false,
     saveallonrun = false,
     showfncall = false,
-    showligatures = false,
+    showligatures = false, 
     showtabicon = false,
     showtabtooltip = true,
     smartindent = true,
@@ -176,7 +176,7 @@ return {
     port = nil,
     redirect = nil,
     refuseonconflict = true,
-    runonstart = nil,
+    runonstart = true,
     showtostring = false,
     verbose = false,
   },
@@ -283,7 +283,6 @@ return {
 
   styles = nil,
   stylesoutshell = nil,
-
   autocomplete = true,
   autoanalyzer = true,
   acandtip = {

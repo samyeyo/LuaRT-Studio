@@ -733,6 +733,7 @@ function CreateEditor(bare)
     edcfg.fontencoding or wx.wxFONTENCODING_DEFAULT)
   editor:SetFont(editorfont)
   editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, editor:GetFont())
+  editor:StyleSetFont(wxstc.wxSTC_STYLE_INDENTGUIDE, editor:GetFont())
 
   editor:SetTabWidth(tonumber(edcfg.tabwidth) or 2)
   editor:SetIndent(tonumber(edcfg.tabwidth) or 2)
@@ -808,8 +809,8 @@ function CreateEditor(bare)
     editor:SetAdditionalCaretsBlink(1)
     editor:SetAdditionalSelectionTyping(1)
     -- allow extra ascent/descent
-    editor:SetExtraAscent(tonumber(edcfg.extraascent) or 0)
-    editor:SetExtraDescent(tonumber(edcfg.extradescent) or 0)
+    editor:SetExtraAscent(edcfg.extraascent and tonumber(edcfg.extraascent) or 1)
+    editor:SetExtraDescent(edcfg.extradescent and tonumber(edcfg.extradescent) or 2)
     -- set whitespace size
     editor:SetWhitespaceSize(tonumber(edcfg.whitespacesize) or 1)
     -- set virtual space options

@@ -747,7 +747,7 @@ local function closeWindow(event)
   wx.wxGetApp():Disconnect(wx.wxEVT_TIMER)
 
   event:Skip()
-
+  ide.frame.bottomnotebook.shellbox:Shutdown() --close Lua 5.4 state
   PackageEventHandle("onAppShutdown")
 end
 frame:Connect(wx.wxEVT_CLOSE_WINDOW, closeWindow)
