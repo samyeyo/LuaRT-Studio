@@ -8,8 +8,8 @@ local function exePath(self, version)
 end
 
 return {
-    name = "LuaRT Console",
-    description = ("LuaRT console interpreter with debugger"),
+    name = "Console",
+    description = ("console interpreter with debugger"),
     api = {"baselib"},
     luaversion = version,
     fexepath = exePath,
@@ -66,7 +66,7 @@ return {
     end
 
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-    local pid = CommandLineRun(cmd,self:fworkdir(wfilename),false,true,nil,nil,
+    local pid = CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
         function() if rundebug then wx.wxRemoveFile(filepath) end end)
 
     if (rundebug or version) and cpath then wx.wxSetEnv(envcpath, cpath) end
@@ -74,7 +74,7 @@ return {
         return pid
     end,
     hasdebugger = true,
-    scratchextloop = true,
+    scratchextloop = false,
     unhideanywindow = true,
     takeparameters = true,
     skipcompile = true

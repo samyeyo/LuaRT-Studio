@@ -8,7 +8,7 @@ local function exePath(self, version)
 end
 
 return {
-    name = "LuaRT Desktop",
+    name = "Desktop",
     description = ("LuaRT desktop interpreter with debugger"),
     api = {"baselib"},
     luaversion = version,
@@ -74,7 +74,7 @@ return {
         return pid
     end,
     hasdebugger = true,
-    scratchextloop = true,
+    scratchextloop = false,
     unhideanywindow = true,
     takeparameters = true,
     skipcompile = true
