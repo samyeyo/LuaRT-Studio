@@ -552,6 +552,7 @@ function SettingsRestoreEditorSettings()
   local interpreter = settingsReadSafe(settings, "interpreter",
     ide.config.interpreter or ide.config.default.interpreter)
   ProjectSetInterpreter(interpreter)
+  ide.frame.menuBar:Check(ID_SHOWCONSOLE, settingsReadSafe(settings, "showconsoleonrun", "false") == "true")
 
   settings:SetPath(path)
 end
@@ -563,7 +564,7 @@ function SettingsSaveEditorSettings()
   settings:SetPath(listname)
 
   settings:Write("interpreter", ide.interpreter and ide.interpreter.fname or ide.config.default.interpreter)
-
+  settings:Write("showconsoleonrun", tostring(ide.frame.menuBar:IsChecked(ID_SHOWCONSOLE)))
   settings:SetPath(path)
 end
 

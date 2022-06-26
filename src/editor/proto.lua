@@ -69,9 +69,9 @@ ide.proto.Document = {__index = {
   SetActive = function(self)
     if not self.editor then return false end
     local ext = GetFileExt(self:GetFilePath())
-    if ext == "wlua" and ide.interpreter.name == "LuaRT Console" then
+    if ext == "wlua" and ide.interpreter.name == "Console" then
       ProjectSetInterpreter("desktop")
-    elseif ext == "lua" and ide.interpreter.name == "LuaRT Desktop" then
+    elseif ext == "lua" and ide.interpreter.name == "Desktop" then
       ProjectSetInterpreter("console")
     end
     local index, notebook = self:GetTabIndex()
