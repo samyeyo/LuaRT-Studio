@@ -22,22 +22,22 @@
 local unpack = table.unpack or unpack
 
 local function getLightStyles()
-  local fg = {64, 64, 64}
-  local bg = {250, 250, 250}
+  local fg = {0x33, 0x36, 0x38}
+  local bg = {255, 255, 255}
   return {
     -- lexer specific (inherit fg/bg from text)
     lexerdef = {fg = {160, 160, 160}},
-    comment = {fg = {128, 128, 128}},
-    stringtxt = {fg = {128, 32, 16}},
-    stringeol = {fg = {128, 32, 16}, bg = {224, 192, 224}, fill = true},
+    comment = {fg = {0x90, 0x94, 0x97}},
+    stringtxt = {fg = {0xEA, 0x6A, 0xC3}},
+    stringeol = {fg = {0xEA, 0x6A, 0xC3}, bg = {224, 192, 224}, fill = true},
     preprocessor = {fg = {128, 128, 0}},
     operator = {fg = fg},
-    number = {fg = {80, 112, 255}},
+    number = {fg = {0xae, 0x81, 0xff}},
 
-    keywords0 = {fg = {32, 32, 192}},
-    keywords1 = {fg = {127, 32, 96}},
-    keywords2 = {fg = {32, 127, 96}},
-    keywords3 = {fg = {64, 32, 96}},
+    keywords0 = {fg = {0x00, 0x66, 0xcc}},
+    keywords1 = {fg = {0x00, 0x66, 0xcc}},
+    keywords2 = {fg = {0xe6, 0x99, 0x00}},
+    keywords3 = {fg = {0xe6, 0x99, 0x00}},
     keywords4 = {fg = {127, 0, 95}},
     keywords5 = {fg = {35, 95, 175}},
     keywords6 = {fg = {0, 127, 127}},
@@ -55,7 +55,7 @@ local function getLightStyles()
     -- common special (need custom fg & bg)
     sel = {bg = {208, 208, 208}},
     caret = {fg = {0, 0, 0}},
-    caretlinebg = {bg = {240, 240, 230}},
+    caretlinebg = {bg = bg},
     fold = {fg = {192, 192, 192}, bg = bg, sel = {160, 128, 224}},
     whitespace = {},
     edge = {},
@@ -82,12 +82,12 @@ local function getLightStyles()
 
     -- indicators
     indicator = {
-      fncall = {},
-      varlocal = {},
-      varglobal = {},
-      varmasking = {},
+      fncall = nil,
+      varlocal = nil,
+      varglobal = nil,
+      varmasking = nil,
       varmasked = {},
-      varself = {},
+      varself = nil,
       searchmatch = {},
       searchselection = {},
     },
@@ -228,7 +228,7 @@ local specialmapping = {
       end
       if tonumber(style.alpha) then
         editor:SetAdditionalSelAlpha(style.alpha)
-      end
+      end 
     end
   end,
 
@@ -237,7 +237,6 @@ local specialmapping = {
       editor:SetCaretForeground(wx.wxColour(unpack(style.fg)))
     end
   end,
-
   caretlinebg = function(editor,style)
     if iscolor(style.bg) then
       editor:SetCaretLineBackground(wx.wxColour(unpack(style.bg)))
@@ -473,11 +472,11 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
 
     editor:IndicatorSetStyle(fncall, type(indic.fncall) == type{} and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
     editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(type(indic.fncall) == type{} and indic.fncall.fg or {128, 128, 255})))
-    editor:IndicatorSetStyle(varlocal, type(indic.varlocal) == type{} and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetStyle(varlocal, type(indic.varlocal) == type{} and indic.varlocal.st or 0)
     editor:IndicatorSetForeground(varlocal, wx.wxColour(unpack(type(indic.varlocal) == type{} and indic.varlocal.fg or defaultfg)))
-    editor:IndicatorSetStyle(varself, type(indic.varself) == type{} and indic.varself.st or wxstc.wxSTC_INDIC_DOTS)
+    editor:IndicatorSetStyle(varself, type(indic.varself) == type{} and indic.varself.st or 0)
     editor:IndicatorSetForeground(varself, wx.wxColour(unpack(type(indic.varself) == type{} and indic.varself.fg or defaultfg)))
-    editor:IndicatorSetStyle(varglobal, type(indic.varglobal) == type{} and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
+    editor:IndicatorSetStyle(varglobal, type(indic.varglobal) == type{} and indic.varglobal.st or 0)
     editor:IndicatorSetForeground(varglobal, wx.wxColour(unpack(type(indic.varglobal) == type{} and indic.varglobal.fg or defaultfg)))
     editor:IndicatorSetStyle(varmasking, type(indic.varmasking) == type{} and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)
     editor:IndicatorSetForeground(varmasking, wx.wxColour(unpack(type(indic.varmasking) == type{} and indic.varmasking.fg or defaultfg)))
