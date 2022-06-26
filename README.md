@@ -88,4 +88,4 @@ See [LICENSE](LICENSE).
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
 
-[demo]: www.luart.org/img/ide.png
+[demo]: www.luart.org/ide.png
