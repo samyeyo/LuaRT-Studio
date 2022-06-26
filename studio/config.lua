@@ -13,7 +13,7 @@ singleinstance = not mac
 
 unhidewindow = { -- allow unhiding of GUI windows
   -- 1 - show if hidden, 0 - ignore, 2 -- hide if shown
-  ConsoleWindowClass = 2,
+  ConsoleWindowClass = 0,
   ['Auto-Suggest Dropdown'] = 2,
   SysShadow = 2,
   -- IUP library window
