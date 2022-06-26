@@ -88,5 +88,5 @@ See [LICENSE](LICENSE).
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
 
-[demo]: https://www.luart.org/studio.luart.org/img/ide.png
-[title]: https://www.luart.org/studio/.luart.org/img/title.png
+[demo]: https://www.luart.org/ide.png
+[title]: https://www.luart.org/logo.png
