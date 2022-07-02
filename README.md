@@ -1,6 +1,6 @@
 <div align="center">
 
-![Title][title] 
+[![Title][title]](https://studio.luart.org/)
 
 [![Lua VM 5.4.4](https://badgen.net/badge/Lua%20VM/5.4.4/yellow)](https://www.lua.org/)
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
@@ -89,5 +89,5 @@ See [LICENSE](LICENSE).
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
 
-[demo]: https://www.luart.org/ide.png
-[title]: https://www.luart.org/logo.png
+[demo]: https://studio.luart.org/ide.png
+[title]: https://studio.luart.org/logo.png
