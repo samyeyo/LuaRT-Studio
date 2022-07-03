@@ -84,7 +84,8 @@ passed to the second instance will trigger opening of that directory and file(s)
 See [LICENSE](LICENSE).
 
 ## Links
-  
+
+- [LuaRT Studio Homepage](https://studio.luart.org/)
 - [LuaRT Homepage](http://www.luart.org/)
 - [LuaRT Community](http://community.luart.org/)
 - [LuaRT Documentation](http://www.luart.org/doc)
