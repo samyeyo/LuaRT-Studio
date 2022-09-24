@@ -1,5 +1,14 @@
 # LuaRT Studio Changelog
 
+
+## v1.1 (Sept 25 2022)
+
+### Highlights & Improvements
+  - LuaRT interpreter updated to LuaRT 1.0.0 x86
+  - New "Compile to executable..." in Project menu to compile the current Lua script to executable
+  - Uses wrtc.exe, the GUI frontend for rtc
+
+------------------------------------------------------------------------------------
 ## v1.0 (Jun 26 2022)
 
 ### Highlights & Improvements
