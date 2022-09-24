@@ -46,14 +46,14 @@ local function displayAbout(event)
 	<table cellspacing="3" cellpadding="3" width="100%%">
 	  <tr>
 		<td>
-		<b>LuaRT Studio (%s)</b><br>
+		<b>LuaRT Studio %s (%s)</b><br>
 		<b>Copyright &copy; 2022 Samir Tine</b><br>
 		Licensed under the MIT License.
 		</td>
 	  </tr>
 	  <tr>
 		<td>
-		<b>Based on ZeroBrane Studio (%s; MobDebug %s)</b><br>
+		<b>Based on ZeroBrane Studio (MobDebug %s)</b><br>
 		<b>Copyright &copy; 2011-2021 ZeroBrane LLC</b><br>
 		Paul Kulchenko<br>
 		Licensed under the MIT License.
@@ -86,7 +86,7 @@ local function displayAbout(event)
 	</td></tr></table>
       </body>
     </html>]])
-  :format(logoimg, ide.frame.bottomnotebook.shellbox.getvalue("_VERSION").." "..ide.frame.bottomnotebook.shellbox.getvalue("_ARCH"), ide.VERSION, mobdebug._VERSION, ide:GetAppName(), table.concat({
+  :format(logoimg, ide.VERSION, ide.frame.bottomnotebook.shellbox.getvalue("_VERSION").." "..ide.frame.bottomnotebook.shellbox.getvalue("_ARCH"), mobdebug._VERSION, ide:GetAppName(), table.concat({
       wx.wxVERSION_STRING,
       wxlua.wxLUA_VERSION_STRING,
       ide:IsValidProperty(ed, "GetLibraryVersionInfo") and ed:GetLibraryVersionInfo():GetVersionString() or nil,
