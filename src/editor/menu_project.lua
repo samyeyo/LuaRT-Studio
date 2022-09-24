@@ -17,8 +17,7 @@ local targetDirMenu = ide:MakeMenu {
 local targetMenu = ide:MakeMenu {}
 local debugMenu = ide:MakeMenu {
   { ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file") },
---  { ID_RUNNOW, TR("Run As Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
-  { ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file") },
+  { ID_COMPILE, TR("&Compile to executable...")..KSC(ID_COMPILE), TR("Compile the current file to executable") },
   { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
   { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
   { },
@@ -41,7 +40,6 @@ local debugMenu = ide:MakeMenu {
   { ID_CLEAROUTPUTENABLE, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUTENABLE), TR("Clear the output window before compiling or debugging"), wx.wxITEM_CHECK },
   { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS), TR("Provide command line parameters") },
   { ID_PROJECTDIR, TR("Project Directory"), TR("Set the project directory to be used"), targetDirMenu },
-  -- { ID_INTERPRETER, TR("LuaRT interpreter"), TR("Set the interpreter to be used"), targetMenu },
 }
 menuBar:Append(debugMenu, TR("&Project"))
 menuBar:Check(ID_CLEAROUTPUTENABLE, true)
@@ -278,10 +276,10 @@ frame:Connect(ID_BREAKPOINTPREV, wx.wxEVT_UPDATE_UI,
 
 frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    ide:GetOutput():Activate()
-    CompileProgram(ide:GetEditor(), {
-        keepoutput = ide:GetLaunchedProcess() ~= nil or ide:GetDebugger():IsConnected()
-    })
+    local doc = ide:GetDocument(ide:GetEditor())
+    if doc:GetFilePath() ~= nil then
+      wx.wxExecute("bin/wrtc.exe " ..doc:GetFilePath().." "..(ide:GetProject() or ""))
+    end
   end)
 frame:Connect(ID_COMPILE, wx.wxEVT_UPDATE_UI,
   function (event) event:Enable(ide:GetEditor() ~= nil) end)
