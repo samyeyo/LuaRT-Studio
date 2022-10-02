@@ -276,11 +276,15 @@ frame:Connect(ID_BREAKPOINTPREV, wx.wxEVT_UPDATE_UI,
 
 frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    local doc = ide:GetDocument(ide:GetEditor())
-    if doc:GetFilePath() ~= nil then
-      wx.wxExecute("bin/wrtc.exe " ..doc:GetFilePath().." "..(ide:GetProject() or ""))
+    local docpath = ide:GetDocument(ide:GetEditor()):GetFilePath()
+    if docpath ~= nil then
+      local projpath =  ide:GetProject():gsub("[\\/]$", "") or ""
+      local isinproject = string.find(docpath, projpath) or false
+      local cmd = 'bin/wrtc.exe "'..docpath..(isinproject and '" "'..projpath..'"' or '"')
+      wx.wxExecute(cmd)
     end
   end)
+
 frame:Connect(ID_COMPILE, wx.wxEVT_UPDATE_UI,
   function (event) event:Enable(ide:GetEditor() ~= nil) end)
 
