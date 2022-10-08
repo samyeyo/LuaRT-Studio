@@ -1,7 +1,7 @@
 local ui = require "ui"
 local zip = require "zip"
 
-local win = ui.Window("Zip file viewer", 250, 300)
+local win = ui.Window("Zip file viewer", "fixed", 250, 300)
 local list = ui.List(win, {}, 0, 40, 250, 260)
 list.style = "icons"
 local button = ui.Button(win, "Open ZIP file", 80)

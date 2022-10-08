@@ -4,17 +4,18 @@
 
 local console = require "console"
 
+console.fullscreen = true
+console.fontsize = 22
+
 local nR = 14
 local msg = "LuaRT ASCII Fireworks from QB64 forum. Adapted from Bplus Inspired by Pete, TempodiBasic"
 local Rocket = Object {}
 
 console.cursor = false
 console.fullscreen = true
-console.fontsize = 22
 
 local colmax = console.width
 local rowmax = console.height
-print(colmax, rowmax)
 local colors = { "black", "blue", "green", "cyan", "red", "purple", "yellow", "white", "gray",
 "lightblue", "lightgreen", "lightcyan", "lightred", "lightpurple", "lightyellow", "brightwhite"}
 local r = {}

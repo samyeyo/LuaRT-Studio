@@ -1,9 +1,10 @@
 local ui = require "ui"
 
 local win = ui.Window("Picture conversion example", 512, 380)
-print(sys.File(arg[0]).fullpath)
+win:status("")
+
 local img = ui.Picture(win, "")
-img:load(sys.File(arg[1]).path.."\\LuaRT.png")
+img:load("LuaRT.png")
 img:center()
 
 local button = ui.Button(win, "Save picture to...")

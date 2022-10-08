@@ -12,7 +12,7 @@ Edit.font = "Consolas"
 Edit.fontsize = 8
 
 -- global state variables
-encoding = "Utf8" 	-- current edited file encoding
+encoding = "UTF8" 	-- current edited file encoding
 title = "Untitled"	-- current file title
 file = nil			-- current File object
 
@@ -56,12 +56,12 @@ function FileOpen:onClick()
 			file:open()
 			local isRTF = false
 			if file.extension == ".rtf" then 
-				encoding = "Utf8"
+				encoding = "UTF8"
 				isRTF = true
 			else
 				encoding = file.encoding:capitalize()
 				if encoding == "Binary" then 
-					encoding = "Ascii"
+					encoding = "ASCII"
 				end
 			end
 			file:close()
