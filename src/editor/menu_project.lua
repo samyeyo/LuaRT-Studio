@@ -278,7 +278,7 @@ frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local docpath = ide:GetDocument(ide:GetEditor()):GetFilePath()
     if docpath ~= nil then
-      local projpath =  ide:GetProject():gsub("[\\/]$", "") or ""
+      local projpath = (ide:GetProject() or ""):gsub("[\\/]$", "")
       local isinproject = string.find(docpath, projpath) or false
       local cmd = 'bin/wrtc.exe "'..docpath..(isinproject and '" "'..projpath..'"' or '"')
       wx.wxExecute(cmd)
