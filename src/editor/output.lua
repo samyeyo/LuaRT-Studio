@@ -251,7 +251,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   uid = uid or exename
 
   if (CommandLineRunning(uid)) then
-    DisplayOutputLn(TR("Program can't start because conflicting process is running as %s applicatiob.")
+    DisplayOutputLn(TR("Program can't start because conflicting process is running as %s application.")
       :format(cmd))
     return
   end
