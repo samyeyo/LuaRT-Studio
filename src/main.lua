@@ -14,29 +14,6 @@ local islinux = not iswindows and isproc()
 local arch = iswindows or islinux and "x86" or "x64" -- non-x86 linux is checked separately
 local unpack = table.unpack or unpack
 
-if islinux then
-  local file = io.popen("uname -m")
-  if file then
-    local machine = file:read("*l")
-    local archtype = {
-      x86_64  = "x64",
-      armv7l  = "armhf",
-      aarch64 = "aarch64",
-    }
-    arch = archtype[machine] or arch
-    file:close()
-  end
-  -- check if 64bit kernel is used with 32bit userspace
-  if arch == "x64" then
-    local file = io.popen("file -L /sbin/init")
-    if file then
-      local init = file:read("*l")
-      if init and init:find("ELF 32-bit") then arch = "x86" end
-      file:close()
-    end
-  end
-end
-
 local luaver = (_VERSION and _VERSION:match("Lua (%d%.%d)") or ""):gsub("%.",""):gsub("51","")
 package.cpath = (
   iswindows and ('bin/clibs%s/?.dll;'):format(luaver) or
@@ -132,7 +109,6 @@ ide = {
   end,
 }
 ide.startedat = ide:GetTime()
-
 -- Scintilla switched to using full byte for style numbers from using only first 5 bits
 ide.STYLEMASK = ide.wxver <= "2.9.5" and 31 or 255
 
@@ -839,23 +815,6 @@ if ide.osname == 'Macintosh' then
     end)
 end
 
--- add Ctrl-Tab and Ctrl-Shift-Tab processing on Linux as there is a similar issue
--- to the one on OSX: http://trac.wxwidgets.org/ticket/17064,
--- but at least on Linux the handling of Tab from CHAR_HOOK works.
-if ide.osname == 'Unix' then
-  ide.frame:Connect(wx.wxEVT_CHAR_HOOK, function(event)
-      local key = event:GetKeyCode()
-      if key == wx.WXK_TAB and wx.wxGetKeyState(wx.WXK_CONTROL)
-      and not wx.wxGetKeyState(wx.WXK_ALT) then
-        ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED,
-            wx.wxGetKeyState(wx.WXK_SHIFT) and ID.NOTEBOOKTABPREV or ID.NOTEBOOKTABNEXT
-        ))
-      else
-        event:Skip()
-      end
-    end)
-end
-
 -- The status bar content is drawn incorrectly if it is shown
 -- after being initially hidden.
 -- Show the statusbar and hide it after showing the frame, which fixes the issue.
@@ -866,40 +825,18 @@ ide.frame:Show(true)
 
 if statusbarfix then ide.frame:GetStatusBar():Show(false) end
 
--- somehow having wxAuiToolbar "steals" the focus from the editor on OSX;
--- have to set the focus implicitly on the current editor (if any)
-if ide.osname == 'Macintosh' then
-  local editor = ide:GetEditor()
-  if editor then editor:SetFocus() end
-end
-
 -- enable full screen view if supported (for example, on OSX)
 if ide:IsValidProperty(ide:GetMainFrame(), "EnableFullScreenView") then
   ide:GetMainFrame():EnableFullScreenView()
-end
-
-if ide.osname == 'Macintosh' then
-  local args = {}
-  for _, a in ipairs(ide.arg or {}) do args[a] = true end
-
-  wx.wxGetApp().MacOpenFiles = function(files)
-    for _, filename in ipairs(files) do
-      -- in some cases, OSX sends the last command line parameter that looks like a filename
-      -- to OpenFile callback, which gets reported to MacOpenFiles.
-      -- I've tried to trace why this happens, but the only reference I could find
-      -- is this one: http://lists.apple.com/archives/cocoa-dev/2009/May/msg00480.html
-      -- To avoid this issue, the filename is skipped if it's present in `arg`.
-      -- Also see http://trac.wxwidgets.org/ticket/14558 for related discussion.
-      if not args[filename] then ide:ActivateFile(filename) end
-    end
-    args = {} -- reset the argument cache as it only needs to be checked on the initial launch
-  end
 end
 
 -- check for deprecated items in the config
 if type(ide.config.outputshell) == type({}) and next(ide.config.outputshell) then
   ide:Print("Warning: using `outputshell.*` in configuration settings is no longer supported; use `output.*` and `console.*` instead.")
 end
+ide:Print("Welcome to LuaRT Studio "..ide.VERSION.." ("..ide.frame.bottomnotebook.shellbox.getvalue("_VERSION").." "..ide.frame.bottomnotebook.shellbox.getvalue("_ARCH")..")")
+ide:Print("Copyright (c) 2022, Samir Tine.")
+ide:Print("https://github.com/samyeyo/LuaRT-Studio")
 
 wx.wxGetApp():MainLoop()
 
