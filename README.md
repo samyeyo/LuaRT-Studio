@@ -23,7 +23,7 @@
 
 LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, based on the LuaRT interpreter. LuaRT Studio can also be used to develop standard Lua applications based on latest Lua 5.4.4 VM seamlessly.
 
-* Small and portable Lua 5.4.4 IDE for Windows
+* Small and portable Lua 5.4.4 IDE for Windows for x86 and x64
 * Based on ZeroBrane Studio, from Paul Kulchenko 
 * Bundled with a specific LuaRT interpreter, compatible with standard Lua
 * Automatic switch between Lua console or desktop application based on file extension (.lua and .wlua respectively)
