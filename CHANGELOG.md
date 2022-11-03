@@ -1,5 +1,15 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.2.0 (Nov 3 2022)
+ 
+### Highlights & Improvements
+  - New x64 LuaRT-Studio to develop and debug 64bits Lua applications, using the LuaRT x64 toolchain
+  - LuaRT interpreter updated to LuaRT 1.1.0 
+  - New examples: img_viewer.wlua, server.wlua and binary.wlua
+  - New welcome message in Output and Local panes
+ 
+### Bugfixes
+- Fixed runtime error when compiling to executable without a project set
 
 ## v1.1 (Sept 25 2022)
 
