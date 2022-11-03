@@ -13,22 +13,6 @@ local socket = require("socket.core")
 
 local _M = socket
 
--- this is needed in case this library is used when "socket.core" is loaded,
--- but has an older version of luasocket that does not include `connect`.
-if not socket.connect then
-  socket.connect = function (address, port, laddress, lport)
-    local sock, err = socket.tcp()
-    if not sock then return nil, err end
-    if laddress then
-        local res, err = sock:bind(laddress, lport, -1)
-        if not res then return nil, err end
-    end
-    local res, err = sock:connect(address, port)
-    if not res then return nil, err end
-    return sock
-  end
-end
-
 -----------------------------------------------------------------------------
 -- Exported auxiliar functions
 -----------------------------------------------------------------------------
@@ -55,16 +39,16 @@ function _M.bind(host, port, backlog)
         if not sock then return nil, err end
         sock:setoption("reuseaddr", true)
         res, err = sock:bind(alt.addr, port)
-        if not res then 
+        if not res then
             sock:close()
-        else 
+        else
             res, err = sock:listen(backlog)
-            if not res then 
+            if not res then
                 sock:close()
             else
                 return sock
             end
-        end 
+        end
     end
     return nil, err
 end

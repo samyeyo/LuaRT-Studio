@@ -317,7 +317,7 @@ end
 
 local function lua_getstring(idx)
   local idx = idx or -1
-	local len = ffi.new("unsigned int[1]", 0)
+	local len = ffi.new("uint64_t[1]", 0)
 	local str = ffi.string(lua54.lua_tolstring(L, idx, len), len[0])
   if idx == -1 then
     lua_pop(1)

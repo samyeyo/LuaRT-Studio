@@ -1,19 +1,9 @@
 ------------------------------------------------------------------------------
--- LuaSec 0.9
+-- LuaSec 1.2.0
 --
--- Copyright (C) 2006-2019 Bruno Silvestre
+-- Copyright (C) 2006-2022 Bruno Silvestre
 --
 ------------------------------------------------------------------------------
-
-if package.config:sub(1,1) == "\\" then -- Windows only
-  -- this hack is needed because OpenSSL libraries may be available elsewhere
-  -- in PATH and un/loading them may lead to crashes in the application.
-  -- loading them using the full path ensures that the right versions are un/loaded.
-  -- don't need to request any function as only need to load libraries. -- PK
-  local bindir = debug.getinfo(1,'S').source:gsub("[^/\\]+$",""):gsub("^@","").."../bin/"
-  package.loadlib(bindir.."libcrypto-1_1.dll", "")
-  package.loadlib(bindir.."libssl-1_1.dll", "")
-end
 
 local core    = require("ssl.core")
 local context = require("ssl.context")
@@ -212,7 +202,11 @@ local function newcontext(cfg)
    end
 
    if config.capabilities.dane and cfg.dane then
-      context.setdane(ctx)
+      if type(cfg.dane) == "table" then
+         context.setdane(ctx, unpack(cfg.dane))
+      else
+         context.setdane(ctx)
+      end
    end
 
    return ctx
@@ -281,7 +275,7 @@ core.setmethod("info", info)
 --
 
 local _M = {
-  _VERSION        = "0.9",
+  _VERSION        = "1.2.0",
   _COPYRIGHT      = core.copyright(),
   config          = config,
   loadcertificate = x509.load,
