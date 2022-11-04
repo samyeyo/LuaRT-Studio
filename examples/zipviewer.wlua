@@ -1,5 +1,5 @@
 local ui = require "ui"
-local zip = require "zip"
+local zip = require "compression"
 
 local win = ui.Window("Zip file viewer", "fixed", 250, 300)
 local list = ui.List(win, {}, 0, 40, 250, 260)
@@ -11,7 +11,7 @@ local toremove = {}
 
 function button:onClick()
     local file = ui.opendialog("Select a ZIP archive file", false, "ZIP archive files (*.zip)|*.zip")
-    if file ~= nil and zip.isvalid(file) then
+    if file ~= nil and zip.isZip(file) then
         list:clear()
         zip_archive = zip.Zip(file, "read")
         for entry, isdir in each(zip_archive) do
