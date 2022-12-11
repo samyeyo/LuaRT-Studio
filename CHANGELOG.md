@@ -1,5 +1,14 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.2.1 (Dec 10 2022)
+
+### Highlights & Improvements
+  - LuaRT toolchain updated to v1.2.0 
+  - Updated examples to LuaRT v1.2.0
+ 
+### Bugfixes
+  - Fixed debugging crash in LuaRT Studio x64
+
 ## LuaRT Studio v1.2.0 (Nov 3 2022)
  
 ### Highlights & Improvements
