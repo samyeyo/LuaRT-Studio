@@ -32,6 +32,8 @@ LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, ba
 * Icons for Watch panel, Stack panel and a new Symbol tab
 * Support for using ttf font files
 * LuaCheck updated to 0.26
+* LuaSec updated to 1.2.0
+* LuaSocket updated to 3.0-rc1
 * Updated mobdebug to support LuaRT objects.
 * New project option to Show/Hide console window.
 * Local Lua 5.4.4 console 
