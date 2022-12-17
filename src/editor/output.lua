@@ -14,12 +14,34 @@ local ERROR_MARKER = StylesGetMarker("error")
 local PROMPT_MARKER = StylesGetMarker("prompt")
 local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 
+local ffi = require 'ffi'
+
+ffi.cdef[[
+int MultiByteToWideChar(unsigned int CodePage,
+    unsigned long dwFlags,
+    const char* lpMultiByteStr,
+    int cbMultiByte,
+    wchar_t* lpWideCharStr,
+    int cchWideChar);
+]]
+
+local CP_UTF8 = 65001
+local CP_ACP = 0
+
+local function toUnicode(input)
+    local wlen = ffi.C.MultiByteToWideChar(CP_UTF8, 0, input, #input, nil, 0)
+    local wstr = ffi.new('wchar_t[?]', wlen + 1)
+    ffi.C.MultiByteToWideChar(CP_UTF8, 0, input, #input, wstr, wlen)
+    return wstr, wlen
+end
+
 local config = ide.config.output
 
 out:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )
+out:SetCodePage(wxstc.wxSTC_CP_UTF8)
 out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
 out:StyleClearAll()
 out:SetMarginWidth(1, 16) -- marker margin
@@ -236,10 +258,15 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
 
   local flagconsole = wx.wxEXEC_HIDE_CONSOLE
 
-  if ide.interpreter.name == 'Console' and frame.menuBar:IsChecked(ID_SHOWCONSOLE) then
-    tooutput = false
-    nohide = true
-    flagconsole = 2
+  if frame.menuBar:IsChecked(ID_SHOWCONSOLE) then
+--    if ide.interpreter.name == 'Console' then
+      tooutput = false
+      nohide = true
+      flagconsole = 2
+--    else 
+--      tooutput = false
+--      nohide = true      
+--    end
   end
   -- try to extract the name of the executable from the command
   -- the executable may not have the extension and may be in quotes
@@ -335,8 +362,10 @@ local function getStreams(all)
         elseif (v.toshell) then
           ide:GetConsole():Print(str)
         else
+          str = str:gsub("\r\n", "\n")
           DisplayOutputNoMarker(str)
           if str and (getInputLine() ~= wx.wxNOT_FOUND or out:GetReadOnly()) then
+            ide:GetOutput():SetFocus()
             ide:GetOutput():Activate()
             updateInputMarker()
           end
@@ -349,13 +378,15 @@ local function getStreams(all)
     local str = textout
     if not str then return end
     textout = nil
-    str = str .. "\n"
+    str = str .. "\r\n\r\n"
     for _,v in pairs(tab) do
       local pfn
       if v.callback then
         str,pfn = v.callback(str)
       end
       if str then
+        local s, len = toUnicode(str)
+        str = ffi.string(s, len*2)
         v.stream:Write(str, #str)
       end
       updateInputMarker()
@@ -385,7 +416,7 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         local ok, err = pcall(customprocs[pid].endcallback, pid, event:GetExitCode())
         if not ok then ide:GetOutput():Error(("Post processing execution failed: %s"):format(err)) end
       end
-
+      
       -- if this was started with uid (`CommandLineRun`), then it needs additional processing
       if customprocs[pid].uid then
         -- delete markers and set focus to the editor if there is an input marker
