@@ -259,14 +259,9 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   local flagconsole = wx.wxEXEC_HIDE_CONSOLE
 
   if frame.menuBar:IsChecked(ID_SHOWCONSOLE) then
---    if ide.interpreter.name == 'Console' then
-      tooutput = false
+     tooutput = false
       nohide = true
       flagconsole = 2
---    else 
---      tooutput = false
---      nohide = true      
---    end
   end
   -- try to extract the name of the executable from the command
   -- the executable may not have the extension and may be in quotes

@@ -46,6 +46,8 @@ return {
     end
 
     local cpath = os.getenv(envcpath)
+    local luart_path = ide.frame.bottomnotebook.shellbox.getvalue([[sys.registry.read('HKEY_CURRENT_USER', 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\LuaRT', 'InstallLocation', false) or '']])
+    wx.wxSetEnv(envcpath, cpath..";"..luart_path.."/modules/?.dll")
     if rundebug and cpath and not iscustom then
         -- prepend osclibs as the libraries may be needed for debugging,
         -- but only if no path.lua is set as it may conflict with system libs
@@ -55,7 +57,7 @@ return {
         -- adjust references to /clibs/ folders to point to version-specific ones
         local cpath = os.getenv(envcpath)
         local clibs = string.format('/clibs%s/', version):gsub('%.','')
-        if not cpath:find(clibs, 1, true) then cpath = cpath:gsub('/clibs/', clibs) end
+        if not cpath:find(clibs, 1, true) then cpath = cpath:gsub('/clibs/', clibs) end        
         wx.wxSetEnv(envcpath, cpath)
     end
 
