@@ -19,7 +19,7 @@ debugger.watchCtrl = nil -- the watch ctrl that shows watch information
 debugger.stackCtrl = nil -- the stack ctrl that shows stack information
 debugger.toggleview = {
   bottomnotebook = true, -- output/console is "on" by default
-  stackpanel = false, watchpanel = false, toolbar = false }
+  stackpanel = false, watchpanel = true, toolbar = false }
 debugger.needrefresh = {} -- track components that may need a refresh
 debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
@@ -61,7 +61,7 @@ function debugger:init(init)
   return setmetatable(o, {__index = protodeb})
 end
 
-function debugger:updateWatchesSync(onlyitem)
+function debugger:updateWatchesSync()
   local debugger = self
   local watchCtrl = debugger.watchCtrl
   local pane = ide.frame.uimgr:GetPane("watchpanel")
@@ -133,7 +133,7 @@ function debugger:updateWatchesSync(onlyitem)
         watchCtrl:SetItemText(item, newval)
         image = image or _type or "nil"
         watchCtrl:SetItemImage(item, type_img[image])
-        if onlyitem or val ~= newval then
+        if val ~= newval then
           local newchildren = watchCtrl:GetItemChildren(item)
           if next(curchildren) ~= nil and next(newchildren) == nil then
             watchCtrl:SetItemHasChildren(item, true)
@@ -291,9 +291,7 @@ function debugger:toggleViews(show)
   -- don't toggle if the current state is the same as the new one
   local shown = debugger.toggleview.shown
   if (show and shown) or (not show and not shown) then return end
-
   debugger.toggleview.shown = nil
-
   local mgr = ide.frame.uimgr
   local refresh = false
   for view, needed in pairs(debugger.toggleview) do
@@ -408,7 +406,6 @@ function debugger:ActivateDocument(file, line, activatehow)
         local line = line - 1 -- editor line operations are zero-based
         editor:MarkerAdd(line, CURRENT_LINE_MARKER)
         editor:Refresh() -- needed for background markers that don't get refreshed (wx2.9.5)
-
         -- expand fold if the activated line is in a folded fragment
         if not editor:GetLineVisible(line) then editor:ToggleFold(editor:GetFoldParent(line)) end
 
@@ -427,8 +424,9 @@ function debugger:ActivateDocument(file, line, activatehow)
 
       document:SetActive()
       ide:RequestAttention()
-
-      if content then
+      editor:GotoLine(line-1)
+      debugger:UpdateVariables(editor, document)
+    if content then
         -- it's possible that the current editor tab already has
         -- breakpoints that have been set based on its filepath;
         -- if the content has been matched, then existing breakpoints
@@ -447,7 +445,6 @@ function debugger:ActivateDocument(file, line, activatehow)
         -- specified in a different way
         debugger.editormap[editor] = file
       end
-
       activated = editor
       break
     end
@@ -469,9 +466,7 @@ function debugger:ActivateDocument(file, line, activatehow)
         :format(file))
     end
   end
-
   PackageEventHandle("onDebuggerActivate", debugger, file, line, activated)
-
   return activated
 end
 
@@ -1050,6 +1045,39 @@ do
   end
 end
 
+function debugger:UpdateVariables(editor, document)
+  local wroot = self.watchCtrl:GetRootItem()
+  self.watchCtrl:DeleteChildren(wroot)
+  local ctrl = ide:GetOutlineTree()
+  local edpos = editor:GetCurrentPos() + #editor:GetCurLine():gsub("(%s*)$", "")
+  local cache = ide:GetOutline().caches[editor]
+  local item
+  local depth = 0
+  for n, func in ipairs(cache.funcs) do
+    if edpos >= func.pos and (edpos <= func.poe) then      
+      if func.depth > depth then
+        item = func.item
+        depth = func.depth
+      end
+    end
+  end  
+  edpos = editor:GetCurrentPos()  
+  item = ctrl:GetFirstChild(item or ctrl:GetRootItem())
+  while true do
+    if not item:IsOk() then break end
+    local n = -ctrl:GetItemData(item):GetData()
+    if n > 0 then
+      local t = ctrl:GetItemImage(item)
+      if  t == 7 or (t == 6 and cache.vars[n].pos < edpos) then
+        local var = ctrl:GetItemText(item)
+        self.watchCtrl:SetItemExpression(self.watchCtrl:AppendItem(wroot, var, -1), var)
+      end
+    end
+    item = ctrl:GetNextSibling(item)          
+  end  
+
+end
+
 function debugger:terminate()
   local debugger = self
   if debugger.server then
@@ -1101,6 +1129,7 @@ function debugger:RunTo(editor, line)
       end
     end)
 end
+
 function debugger:Wait()
   local debugger = self
   -- wait for all results to come back
@@ -1108,7 +1137,11 @@ function debugger:Wait()
 end
 function debugger:Over() return self:exec("over") end
 function debugger:Out() return self:exec("out") end
-function debugger:Run() return self:exec("run") end
+function debugger:Run()  
+  ide:GetProjectNotebook():SetSelection(1)
+  local result = self:exec("run")
+  return result
+end
 function debugger:detach(cmd)
   local debugger = self
   if not debugger.server then return end
@@ -1231,7 +1264,6 @@ local function debuggerCreateStackWindow()
     local image
     if value ~= nil then
       local t = type(value)
-      -- ide:Print(self:GetItemText(item).." => "..t)
       if t == "table" then
         if value.constructor ~= nil then
           image = 5
@@ -1609,7 +1641,6 @@ local function debuggerCreateWatchWindow()
             while item:IsOk() do
               local value = valuecache[item:GetValue()]
               local name = self:GetItemName(item)
-              ide:Print(name, value)
 --              local strval = fixUTF8(type(value) ~= "string" and tostring(value) or '"'..value..'"')--serialize(value, params))
 --              local _type = strval:match("^(%w+):") or false
 --              local image = false
@@ -1726,32 +1757,13 @@ local function debuggerCreateWatchWindow()
     function (event)
       -- store the item to be used in edit/delete actions
       item = watchCtrl:HitTest(watchCtrl:ScreenToClient(wx.wxGetMousePosition()))
-      local editlabel = watchCtrl:IsWatch(item) and TR("&Edit Watch") or TR("&Edit Value")
       local menu = ide:MakeMenu {
-        { ID.ADDWATCH, TR("&Add Watch")..KSC(ID.ADDWATCH) },
-        { ID.EDITWATCH, editlabel..KSC(ID.EDITWATCH) },
-        { ID.DELETEWATCH, TR("&Delete Watch")..KSC(ID.DELETEWATCH) },
         { ID.COPYWATCHVALUE, TR("&Copy Value")..KSC(ID.COPYWATCHVALUE) },
       }
       PackageEventHandle("onMenuWatch", menu, watchCtrl, event)
       watchCtrl:PopupMenu(menu)
       item = nil
     end)
-
-  watchCtrl:Connect(ID.ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
-      watchCtrl:SetFocus()
-      watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, -1))
-    end)
-
-  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function (event) watchCtrl:EditLabel(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_UPDATE_UI,
-    function (event) event:Enable(watchCtrl:IsEditable(item or watchCtrl:GetSelection())) end)
-
-  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function (event) watchCtrl:Delete(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_UPDATE_UI,
-    function (event) event:Enable(watchCtrl:IsWatch(item or watchCtrl:GetSelection())) end)
 
   watchCtrl:Connect(ID.COPYWATCHVALUE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:CopyItemValue(item or watchCtrl:GetSelection()) end)
@@ -1762,58 +1774,13 @@ local function debuggerCreateWatchWindow()
         and (not debugger.scratchpad or debugger.scratchpad.paused))
     end)
 
-  local label
-  watchCtrl:Connect(wx.wxEVT_COMMAND_TREE_BEGIN_LABEL_EDIT,
-    function (event)
-      local item = event:GetItem()
-      if not (item:IsOk() and watchCtrl:IsEditable(item)) then
-        event:Veto()
-        return
-      end
-
-      label = watchCtrl:GetItemText(item)
-
-      if watchCtrl:IsWatch(item) then
-        local expr = watchCtrl:GetItemExpression(item)
-        if expr then watchCtrl:SetItemText(item, expr) end
-      else
-        local prefix = stringifyKeyIntoPrefix(watchCtrl:GetItemName(item))
-        local val = watchCtrl:GetItemText(item):gsub(q(prefix),'')
-        watchCtrl:SetItemText(item, val)
-      end
-    end)
-  watchCtrl:Connect(wx.wxEVT_COMMAND_TREE_END_LABEL_EDIT,
-    function (event)
-      event:Veto()
-
-      local item = event:GetItem()
-      if event:IsEditCancelled() then
-        if watchCtrl:GetItemText(item) == defaultExpr then
-          -- when Delete is called from END_EDIT, it causes infinite loop
-          -- on OSX (wxwidgets 2.9.5) as Delete calls END_EDIT again.
-          -- disable handlers during Delete and then enable back.
-          watchCtrl:SetEvtHandlerEnabled(false)
-          watchCtrl:Delete(item)
-          watchCtrl:SetEvtHandlerEnabled(true)
-        else
-          watchCtrl:SetItemText(item, label)
-        end
-      else
-        if watchCtrl:IsWatch(item) then
-          watchCtrl:SetItemExpression(item, event:GetLabel())
-        else
-          watchCtrl:UpdateItemValue(item, event:GetLabel())
-        end
-      end
-      event:Skip()
-    end)
-
   local layout = ide:GetSetting("/view", "uimgrlayout")
   local iconsize = ide:GetBestIconSize()
   if layout and not layout:find("watchpanel") then
-    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
+    ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", "Variables", nil, false, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
   else
-    ide:AddPanel(watchCtrl, "watchpanel", TR("Watch"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
+    ide:AddPanel(watchCtrl, "watchpanel", TR("Variables"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
+    ide:GetUIManager():GetPane("watchpanel"):MinSize(260, -1):Bottom():Dock():Layer(1):Position(2):BestSize(300, 200):Show()
   end
 end
 
@@ -1866,6 +1833,10 @@ end
 
 function debugger:teardown()
   local debugger = self
+  local uimgr = ide:GetUIManager()
+  uimgr:GetPane("watchpanel"):Hide()
+  debugger.watchCtrl:DeleteChildren(debugger.watchCtrl:GetRootItem())  
+  uimgr:Update()
   if debugger.server then
     local lines = TR("traced %d instruction", debugger.stats.line):format(debugger.stats.line)
     ide:Print(TR("Debugging session completed (%s)."):format(lines))

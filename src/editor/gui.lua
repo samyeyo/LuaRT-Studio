@@ -526,7 +526,7 @@ local function createBottomNotebook(frame)
       -- set focus on the new page
       local idx = event:GetSelection()
       if idx == wx.wxNOT_FOUND then return end
-      nb:GetPage(idx):SetFocus()
+--      nb:GetPage(idx):SetFocus()
 
       local preview = isPreview(nb:GetPage(nb:GetSelection()))
       local flags = nb:GetWindowStyleFlag()
@@ -667,7 +667,7 @@ local function createBottomNotebook(frame)
   local bmp = ide:GetBitmap("OUTPUT", "PRINT", wx.wxSize(iconsize, iconsize))
   bottomnotebook:AddPage(errorlog, TR("Output"), true, bmp)
   bmp = ide:GetBitmap("OUTPUT", "CONSOLE", wx.wxSize(iconsize, iconsize))
-  bottomnotebook:AddPage(shellbox, TR("Local console"), false, bmp)
+  bottomnotebook:AddPage(shellbox, "Lua interpreter", false, bmp)
   bottomnotebook.errorlog = errorlog
   bottomnotebook.shellbox = shellbox
 
@@ -720,7 +720,7 @@ do
     MinSize(100,100):BestSize(200,200):FloatingSize(400,200):
     Bottom():Layer(1):Position(1):PaneBorder(false):
     CloseButton(true):MaximizeButton(false):PinButton(true))
-
+  mgr:GetPane("watchpanel"):Hide()
   if type(ide.config.bordersize) == 'number' then
     for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
       frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do

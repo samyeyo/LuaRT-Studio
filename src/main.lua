@@ -712,7 +712,7 @@ end
 
 -- these shortcuts need accelerators handling as they are not present anywhere in the menu
 for _, id in ipairs({ ID.GOTODEFINITION, ID.RENAMEALLINSTANCES,
-    ID.REPLACEALLSELECTIONS, ID.QUICKADDWATCH, ID.QUICKEVAL, ID.ADDTOSCRATCHPAD}) do
+    ID.REPLACEALLSELECTIONS, ID.QUICKEVAL}) do
   local ksc = ide.config.keymap[id]
   if ksc and ksc > "" then
     local fakeid = NewID()
@@ -835,8 +835,8 @@ if type(ide.config.outputshell) == type({}) and next(ide.config.outputshell) the
   ide:Print("Warning: using `outputshell.*` in configuration settings is no longer supported; use `output.*` and `console.*` instead.")
 end
 ide:Print("Welcome to LuaRT Studio "..ide.VERSION.." ("..ide.frame.bottomnotebook.shellbox.getvalue("_VERSION").." "..ide.frame.bottomnotebook.shellbox.getvalue("_ARCH")..")")
-ide:Print("Copyright (c) 2022, Samir Tine.")
-ide:Print("https://github.com/samyeyo/LuaRT-Studio")
+ide:Print("Copyright (c) 2023, Samir Tine.")
+ide:Print("\xF0\x9F\x8C\x8E https://github.com/samyeyo/LuaRT-Studio")
 
 wx.wxGetApp():MainLoop()
 

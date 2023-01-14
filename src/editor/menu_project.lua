@@ -222,6 +222,9 @@ local debuggers = {
 
 function ProjectDebug(skipcheck, debtype)
   local debugger = ide:GetDebugger()
+  debugger.watchCtrl:DeleteChildren(debugger.watchCtrl:GetRootItem())
+  ide:GetUIManager():GetPane("watchpanel"):Show() 
+  ide:GetUIManager():Update()     
   if (debugger:IsConnected()) then
     if (debugger.scratchpad and debugger.scratchpad.paused) then
       debugger.scratchpad.paused = nil
@@ -309,6 +312,7 @@ frame:Connect(ID_RUNNOW, wx.wxEVT_COMMAND_MENU_SELECTED,
 frame:Connect(ID_RUNNOW, wx.wxEVT_UPDATE_UI,
   function (event)
     local editor = ide:GetEditor()
+    
     local debugger = ide:GetDebugger()
     -- allow scratchpad if there is no server or (there is a server and it is
     -- allowed to turn it into a scratchpad) and we are not debugging anything
