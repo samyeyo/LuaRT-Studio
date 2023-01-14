@@ -33,7 +33,7 @@ return {
         end
     end
     local params = self:GetCommandLineArg("lua")
-    local cmd = '"'..exe..'" '..([[-e "io.stdout:setvbuf('no')" "%s"]]):format(filepath)..(params and " "..params or "")
+    local cmd = '"'..exe..'" -e '..'"'.."sys.cmd('"..exe:gsub("\\", "/").." "..(filepath):gsub("\\", "/")..(params and " "..params or "")..[[', false)"]]
 
     -- modify LUA_CPATH and LUA_PATH to work with other Lua versions
     local envcpath = "LUA_CPATH"
