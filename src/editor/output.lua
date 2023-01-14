@@ -248,8 +248,9 @@ function OutputSetCallbacks(pid, proc, callback, endcallback)
   customprocs[pid] = {proc=proc, endcallback=endcallback}
 end
 
-function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
+function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback, silent)
   if (not cmd) then return end
+  local silent = silent or false
 
   -- expand ~ at the beginning of the command
   if ide.oshome and cmd:find('~') then
@@ -271,15 +272,21 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     or string.match(exename,'/?([^/]-)%s') or exename
 
   uid = uid or exename
-
-  if (CommandLineRunning(uid)) then
-    DisplayOutputLn(TR("Program can't start because conflicting process is running as %s application.")
+  local pid, proc = CommandLineRunning(uid)
+  if pid then
+    if silent then
+      wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
+      streamouts[pid] = nil
+      customprocs[pid] = nil
+    else
+      DisplayOutputLn(TR("Program can't start because conflicting process is running as %s application.")
       :format(cmd))
-    return
+      return
+    end
   end
-
-  DisplayOutputLn(TR("Program starting as %s application."):format(ide.interpreter.name))
-
+  if not silent then
+    DisplayOutputLn(TR("Program starting as %s application."):format(ide.interpreter.name))
+  end
   local proc = wx.wxProcess(out)
   if (tooutput) then proc:Redirect() end -- redirect the output if requested
 
@@ -304,22 +311,23 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     DisplayOutputLn(TR("Program unable to run as %s application."):format(ide.interpreter.name))
     return
   end
-
-  DisplayOutputLn(TR("Program '%s' started in '%s' (pid: %d).")
+  if not silent then
+    DisplayOutputLn(TR("Program '%s' started in '%s' (pid: %d).")
     :format(uid, (wdir and wdir or wx.wxFileName.GetCwd()), pid))
-
+  end
   OutputSetCallbacks(pid, proc, stringcallback, endcallback)
   customprocs[pid].uid=uid
   customprocs[pid].started = ide:GetTime()
 
   local streamout = proc and proc:GetOutputStream()
-  if streamout then streamouts[pid] = {stream=streamout, callback=stringcallback, out=true} end
+  if streamout then streamouts[pid] = {stream=streamout, callback=stringcallback, out=true, silent=silent} end
 
   if not nohide then
     unHideWindow(pid)
   end
-  nameTab(out, TR("Output (running)"))
-
+  if not silent then
+    nameTab(out, TR("Output (running)"))
+  end
   return pid
 end
 
@@ -337,7 +345,6 @@ local function getStreams(all)
         -- the buffer has readonce bytes, so cut it to the actual size
         str = str:sub(1, v.stream:LastRead())
         processed = processed + #str
-
         local codepage = ide:GetCodePage()
         if codepage and FixUTF8(str) == nil and winapi then
           -- this looks like invalid UTF-8 content, which may be in a different code page;
@@ -358,7 +365,11 @@ local function getStreams(all)
           ide:GetConsole():Print(str)
         else
           str = str:gsub("\r\n", "\n")
-          DisplayOutputNoMarker(str)
+          if bottomnotebook:GetPageText(bottomnotebook:GetPageIndex(out)) == "Output" then
+            DisplayOutput(str)
+          else
+            DisplayOutputNoMarker(str)
+          end
           if str and (getInputLine() ~= wx.wxNOT_FOUND or out:GetReadOnly()) then
             ide:GetOutput():SetFocus()
             ide:GetOutput():Activate()
@@ -400,6 +411,7 @@ end
 
 out:Connect(wx.wxEVT_END_PROCESS, function(event)
     local pid = event:GetPid()
+    local silent = streamouts[pid] and streamouts[pid].silent or false
     if (pid ~= -1) then
       getStreams(true)
       streamins[pid] = nil
@@ -423,9 +435,11 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         end
         unHideWindow(0)
         ide:SetLaunchedProcess(nil)
-        nameTab(out, TR("Output"))
-        DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
+        if not silent then
+          nameTab(out, TR("Output"))
+          DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
           :format(ide:GetTime() - customprocs[pid].started, pid))
+        end
       end
       -- this protects against the object referenced in wxProcess being collected
       -- before the wxProcess itself is collected, which may cause a crash on exit
