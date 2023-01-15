@@ -160,7 +160,7 @@ function StylesGetDefault()
 end
 
 local markers = {
-  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, {255, 255, 255}, {0, 0, 0}},
+  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, {255, 255, 255}, {255, 77, 77}},
   bookmark = {1, wxstc.wxSTC_MARK_BOOKMARK or wxstc.wxSTC_MARK_SHORTARROW, {0, 0, 0}, {255, 255, 255}},
   currentline = {2, wxstc.wxSTC_MARK_ARROW, {32, 160, 234}, {32, 160, 234}},
   message = {3, wxstc.wxSTC_MARK_CHARACTER+(' '):byte(), {0, 0, 0}, {220, 220, 220}},
