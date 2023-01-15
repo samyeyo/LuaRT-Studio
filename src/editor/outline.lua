@@ -27,6 +27,7 @@ local image = { FILE = 0, LFUNCTION = 1, GFUNCTION = 2, AFUNCTION = 3,
 }
 local q = EscapeMagic
 local caches = {}
+outline.caches = caches
 
 local function setData(ctrl, item, value)
   if ide.wxver >= "2.9.5" then
@@ -64,7 +65,7 @@ local function outlineRefresh(editor, force)
   local text
   for _, token in ipairs(tokens) do
     local op = token[1]
-    if op == 'Var' or op == 'Id' then                       
+    if op == 'Var' or op == 'Id' then 
       var = {name = token.name, pos = token.fpos, global =  token.context[token.name] == nil, func = token.context['function'] and funcs[scopes[#scopes][FUNCNUM]] or nil, mainfunc = token.at == 1, forcelocal = op == 'Var' }
       var.image = var.global and image.GVARIABLE or image.LVARIABLE
       vars[#vars+1] = var
@@ -84,7 +85,7 @@ local function outlineRefresh(editor, force)
         if scopes[fundepth][SCOPENUM] == 0 then
           local funcnum = scopes[fundepth][FUNCNUM]
           if funcs[funcnum] then
-            funcs[funcnum].poe = token.fpos + (token.name and #token.name or 0)
+            funcs[funcnum].poe = token.fpos-1 + (token.name and #token.name or 0)
           end
           table.remove(scopes)
         end
@@ -140,19 +141,26 @@ local function outlineRefresh(editor, force)
   -- add file
   local filename = ide:GetDocument(editor):GetTabText()
   local fileitem = cache.fileitem
+  ctrl:SetItemText(ctrl:GetRootItem(), filename)
   if not fileitem or not fileitem:IsOk() then
     local root = ctrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
-    if outcfg.showonefile then
-      fileitem = root
-    else
-      outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)) or ide.filetree.imglist:GetBitmap(2))
-      fileitem = ctrl:AppendItem(root, filename, image.FILE)
-      setData(ctrl, fileitem, editor)
-      ctrl:SetItemBold(fileitem, true)
-      ctrl:SortChildren(root)
-    end
+       fileitem = root
+       ctrl:SetItemText(fileitem, filename:gsub("*", ""))
+       outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)) or ide.filetree.imglist:GetBitmap(2))
+       setData(ctrl, fileitem, editor)
+       ctrl:SetItemImage(fileitem, image.FILE)
+       ctrl:SetEvtHandlerEnabled(true)
+    -- if outcfg.showonefile then
+    --   fileitem = root
+    -- else
+    --   outline.imglist:Replace(image.FILE, ide:CreateFileIcon(GetFileExt(filename)) or ide.filetree.imglist:GetBitmap(2))
+    --   fileitem = ctrl:AppendItem(root, filename, image.FILE)
+    --   setData(ctrl, fileitem, editor)
+    --   ctrl:SetItemBold(fileitem, true)
+    --   ctrl:SortChildren(root)
+    -- end
     cache.fileitem = fileitem
   end
 
@@ -238,22 +246,27 @@ local function outlineRefresh(editor, force)
   for n, func in ipairs(funcs) do
     local depth = outcfg.showflat and 1 or func.depth
     local parent = stack[depth]
-    funcvars[func.name:gsub("%(.*%)", "")] = {}
+    local funcname = func.name:gsub("%(.*%)", "")
+    funcvars[funcname] = {}
     while not parent do depth = depth - 1; parent = stack[depth] end
     if not func.skip then
       if func.image == image.GFUNCTION or (func.depth == 1 and func.image == image.LFUNCTION) then
-        globalvars[func.name:gsub("%(.*%)", "")] = true
+        globalvars[funcname] = true
+      elseif parent ~= nil then
+        local p = funcvars[ctrl:GetItemText(parent):gsub("%(.*%)", "")]
+        if p ~= nil then
+          p[funcname] = true
+        end
       end
       local item = ctrl:AppendItem(parent, func.name, func.image)
-      if ide.config.outline.showcurrentfunction
-      and edpos >= func.pos and func.poe and edpos <= func.poe then
+      if ide.config.outline.showcurrentfunction and edpos >= func.pos and func.poe and (edpos <= func.poe) then
         ctrl:SetItemBold(item, true)
       end
       if outcfg.sort then resort[parent] = true end
       setData(ctrl, item, n)
       func.item = item
       stack[func.depth+1] = item
-    end
+    end   
     func.skip = nil
   end
 
@@ -275,6 +288,7 @@ local function outlineRefresh(editor, force)
       var.item = item
     end
   end
+  cache.funcvars = funcvars
   if outcfg.sort then -- resort items for all parents that have been modified
     for item in pairs(resort) do ctrl:SortChildren(item) end
   end
@@ -334,12 +348,12 @@ local function createOutlineWindow()
   local width, height = 360, 200
   local ctrl = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height), wx.wxTR_HAS_BUTTONS + wx.wxTR_NO_LINES +
-    wx.wxTR_TWIST_BUTTONS + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
+    wx.wxTR_TWIST_BUTTONS + wx.wxNO_BORDER)
 
   outline.outlineCtrl = ctrl
   ide.timers.outline = ide:AddTimer(ctrl, function() outlineRefresh(ide:GetEditor(), false) end)
   ide.timers.symbolindex = ide:AddTimer(ctrl, function() ide:DoWhenIdle(indexFromQueue) end)
-  ctrl:AddRoot("Outline")
+  ctrl:AddRoot("")
   ctrl:SetImageList(outline.imglist)
   ctrl:SetFont(ide:CreateFont(config.outline.fontsize or 9, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,wx.wxFONTWEIGHT_NORMAL, false, config.outline.fontname or "Segoe UI", config.fontencoding or wx.wxFONTENCODING_DEFAULT))
 
@@ -419,7 +433,7 @@ local function createOutlineWindow()
       local ed = ide:GetEditor()
       if not ed then return end
       -- when showing one file only refresh outline for the current editor
-      for editor, cache in pairs((ide.config.outline or {}).showonefile and {[ed] = caches[ed]} or caches) do
+      for editor, cache in pairs(caches) do 
         ide:SetStatus(("Refreshing '%s'..."):format(ide:GetDocument(editor):GetFileName()))
         local isexpanded = ctrl:IsExpanded(cache.fileitem)
         outlineRefresh(editor, true)
@@ -539,10 +553,12 @@ local package = ide:AddPackage('core.outline', {
 
       if fileitem and fileitem:IsOk() then
         local ctrl = outline.outlineCtrl
-        if (ide.config.outline or {}).showonefile then
-          ctrl:DeleteChildren(fileitem)
-        else
-          ctrl:Delete(fileitem)
+        ctrl:DeleteChildren(fileitem)
+        ctrl:SetEvtHandlerEnabled(false)        
+        if ide:GetEditorNotebook():GetPageCount() == 1 then
+          ctrl:SetItemText(fileitem, "No file open")
+          ctrl:SetItemImage(fileitem, -1)
+          ctrl:ClearFocusedItem(fileitem)
         end
       end
     end,
@@ -581,6 +597,12 @@ local package = ide:AddPackage('core.outline', {
         if not lastfocus or editor:GetId() ~= lastfocus then
           outlineRefresh(editor, true)
           lastfocus = editor:GetId()
+          local fileitem = cache and cache.fileitem
+          local doc = ide:GetDocument(editor)
+          local ctrl = outline.outlineCtrl
+          if doc and fileitem and ctrl:GetItemText(fileitem) ~= doc:GetTabText() then
+            ctrl:SetItemText(fileitem, doc:GetTabText():gsub("*", ""))
+          end          
         end
         return
       end
