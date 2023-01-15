@@ -1,1 +1,1 @@
-ide.VERSION = [[1.2]]
+ide.VERSION = [[1.3]]
