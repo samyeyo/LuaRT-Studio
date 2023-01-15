@@ -27,8 +27,13 @@ local editMenu = ide:MakeMenu {
   { ID_SOURCE, TR("Source"), "", {
     { ID_COMMENT, TR("C&omment/Uncomment")..KSC(ID_COMMENT), TR("Comment or uncomment current or selected lines") },
     { ID_REINDENT, TR("Correct &Indentation")..KSC(ID_REINDENT), TR("Re-indent selected lines") },
+    { ID_FORMAT, TR("&Format document...")..KSC(ID_FORMAT), TR("Beautify and format the current document") },
     { ID_FOLD, TR("&Fold/Unfold All")..KSC(ID_FOLD), TR("Fold or unfold all code folds") },
     { ID_FOLDLINE, TR("Fold/Unfold Current &Line")..KSC(ID_FOLDLINE), TR("Fold or unfold current line") },
+    { ID_COPYLINEUP, TR("&Copy line(s) up")..KSC(ID_COPYLINEUP), TR("Copy current/selected line(s) up") },
+    { ID_COPYLINEDOWN, TR("&Copy line(s) down")..KSC(ID_COPYLINEDOWN), TR("Copy current/selected line(s) down") },
+    { ID_MOVELINEUP, TR("Move line(s) &up")..KSC(ID_MOVELINEUP), TR("Move current/selected line(s) up") },
+    { ID_MOVELINEDOWN, TR("Move line(s) &down")..KSC(ID_MOVELINEDOWN), TR("Move current/selected line(s) down") },
     { ID_SORT, TR("&Sort")..KSC(ID_SORT), TR("Sort selected lines") },
   } },
   { ID_BOOKMARK, TR("Bookmark"), "", {
@@ -70,7 +75,7 @@ local function onUpdateUIEditMenu(event)
       ) or false)
     return
   end
-
+  
   local alwaysOn = {
     [ID_SELECTALL] = true,
     -- allow Cut and Copy commands as these work on a line if no selection
@@ -160,7 +165,7 @@ end
 
 for _, event in pairs({
     ID_BOOKMARKTOGGLE, ID_BOOKMARKNEXT, ID_BOOKMARKPREV,
-    ID_AUTOCOMPLETE, ID_SORT, ID_REINDENT, ID_SHOWTOOLTIP,
+    ID_AUTOCOMPLETE, ID_SORT, ID_REINDENT, ID_SHOWTOOLTIP, ID_FORMAT, ID_MOVELINEDOWN, ID_MOVELINEUP
 }) do
   frame:Connect(event, wx.wxEVT_UPDATE_UI, onUpdateUIEditorInFocus)
 end
@@ -219,6 +224,56 @@ frame:Connect(ID_AUTOCOMPLETE, wx.wxEVT_COMMAND_MENU_SELECTED,
 
 frame:Connect(ID_AUTOCOMPLETEENABLE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) ide.config.autocomplete = event:IsChecked() end)
+
+frame:Connect(ID_COPYLINEDOWN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+  function(event)
+    local editor = ide:GetEditor()
+    editor:BeginUndoAction()
+    if editor:GetSelectionEmpty() then
+      editor:LineDuplicate()
+    else
+      local spos = editor:GetSelectionStart()
+      local epos = editor:GetSelectionEnd()-1
+      editor:SetSelection(spos, spos)
+      editor:GotoLine(editor:LineFromPosition(spos))
+      local text = editor:GetTextRange(editor:GetCurrentPos(), editor:GetLineEndPosition(editor:LineFromPosition(epos)))
+      local eol = text:find("\r\n") and "\r\n" or "\n"
+      editor:GotoLine(editor:LineFromPosition(epos)+1)
+      local newpos = editor:GetCurrentPos()
+      editor:InsertText(newpos, text..eol)
+      editor:SetSelection(newpos, newpos+#text)
+    end
+    editor:EndUndoAction()
+  end)
+
+frame:Connect(ID_COPYLINEUP,  wx.wxEVT_COMMAND_MENU_SELECTED,
+  function(event)
+    local editor = ide:GetEditor()
+    editor:BeginUndoAction()
+    if editor:GetSelectionEmpty() then
+      editor:LineDuplicate()
+    else
+      local spos = editor:GetSelectionStart()
+      local epos = editor:GetSelectionEnd()-1
+      editor:SetSelection(spos, spos)
+      editor:GotoLine(editor:LineFromPosition(spos))
+      local text = editor:GetTextRange(editor:GetCurrentPos(), editor:GetLineEndPosition(editor:LineFromPosition(epos)))
+      local eol = text:find("\r?\n") and "\r\n" or "\n"
+      editor:AddText(text..eol)
+      editor:SetSelection(spos, epos+1)
+    end
+    editor:EndUndoAction()
+  end)
+
+frame:Connect(ID_MOVELINEUP,  wx.wxEVT_COMMAND_MENU_SELECTED,
+  function(event)
+    ide:GetEditor():MoveSelectedLinesUp()
+  end)
+
+frame:Connect(ID_MOVELINEDOWN,  wx.wxEVT_COMMAND_MENU_SELECTED,
+  function(event)
+    ide:GetEditor():MoveSelectedLinesDown()
+  end)
 
 frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
@@ -376,6 +431,17 @@ local function reIndent(editor, buf)
     end
   end
 end
+
+frame:Connect(ID_FORMAT, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function (event)
+    if ide.config.editor.saveallonrun and ide.config.staticanalyzer.infervalue then SaveAll(true) end
+    local editor = ide:GetEditor()
+    local fname = ide:GetDocument(editor):GetFilePath()
+    if fname ~= nil then
+      wx.wxExecute('bin/stylua.exe "'..fname..'"')
+      ReLoadFile(fname, editor, true)
+    end    
+  end)
 
 frame:Connect(ID_REINDENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
