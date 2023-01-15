@@ -11,7 +11,6 @@ local uimgr = frame.uimgr
 local viewMenu = ide:MakeMenu {
   { ID_VIEWFILETREE, TR("Project/&FileTree Window")..KSC(ID_VIEWFILETREE), TR("View the project/filetree window"), wx.wxITEM_CHECK },
   { ID_VIEWOUTPUT, TR("&Output/Console Window")..KSC(ID_VIEWOUTPUT), TR("View the output/console window"), wx.wxITEM_CHECK },
-  { ID_VIEWWATCHWINDOW, TR("&Watch Window")..KSC(ID_VIEWWATCHWINDOW), TR("View the watch window"), wx.wxITEM_CHECK },
   { ID_VIEWCALLSTACK, TR("&Stack Window")..KSC(ID_VIEWCALLSTACK), TR("View the stack window"), wx.wxITEM_CHECK },
   { ID_VIEWOUTLINE, TR("Outline Window")..KSC(ID_VIEWOUTLINE), TR("View the outline window"), wx.wxITEM_CHECK },
   { ID_VIEWMARKERS, TR("Markers Window")..KSC(ID_VIEWMARKERS), TR("View the markers window"), wx.wxITEM_CHECK },
@@ -54,7 +53,6 @@ menuBar:Append(viewMenu, TR("&View"))
 local panels = {
   [ID_VIEWOUTPUT] = "bottomnotebook",
   [ID_VIEWFILETREE] = "projpanel",
-  [ID_VIEWWATCHWINDOW] = "watchpanel",
   [ID_VIEWCALLSTACK] = "stackpanel",
   [ID_VIEWOUTLINE] = "outlinepanel",
   [ID_VIEWMARKERS] = "markerspanel",
@@ -97,8 +95,6 @@ frame:Connect(ID_VIEWFILETREE, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)
 frame:Connect(ID_VIEWTOOLBAR, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)
 frame:Connect(ID_VIEWOUTLINE, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)
 frame:Connect(ID_VIEWMARKERS, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)
-frame:Connect(ID_VIEWWATCHWINDOW, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) if togglePanel(event) then ide:GetDebugger():RefreshPanels() end end)
 frame:Connect(ID_VIEWCALLSTACK, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) if togglePanel(event) then ide:GetDebugger():RefreshPanels() end end)
 

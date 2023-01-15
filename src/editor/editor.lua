@@ -957,7 +957,7 @@ function CreateEditor(bare)
         end
       end
     end)
-
+    
   editor.ev = {}
   editor:Connect(wxstc.wxEVT_STC_MARGINCLICK,
     function (event)
@@ -1557,7 +1557,6 @@ function CreateEditor(bare)
         { ID.RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences..KSC(ID.RENAMEALLINSTANCES) },
         { ID.REPLACEALLSELECTIONS, TR("Replace All Selections")..KSC(ID.REPLACEALLSELECTIONS) },
         { },
-        { ID.QUICKADDWATCH, TR("Add Watch Expression")..KSC(ID.QUICKADDWATCH) },
         { ID.QUICKEVAL, TR("Evaluate In Console")..KSC(ID.QUICKEVAL) },
         { ID.ADDTOSCRATCHPAD, TR("Add To Scratchpad")..KSC(ID.ADDTOSCRATCHPAD) },
         { ID.RUNTO, TR("Run To Cursor")..KSC(ID.RUNTO) },
@@ -1651,11 +1650,7 @@ function CreateEditor(bare)
       editor:EndUndoAction()
       editor:SetMainSelection(main)
     end)
-
-  editor:Connect(ID.QUICKADDWATCH, wx.wxEVT_UPDATE_UI, function(event)
-      local _, value = getPositionValues()
-      event:Enable(value ~= nil)
-    end)
+  
   editor:Connect(ID.QUICKADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
       local _, value = getPositionValues()
       ide:AddWatch(value)

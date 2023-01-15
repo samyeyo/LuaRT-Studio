@@ -509,7 +509,7 @@ function console:SetRemote(client)
   local index = bottomnotebook:GetPageIndex(console)
   if index then
     bottomnotebook:SetPageText(index,
-      client and TR("Remote console") or TR("Local console"))
+      client and "Debugging console" or "Lua interpreter")
   end
 end
 

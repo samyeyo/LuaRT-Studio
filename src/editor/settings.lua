@@ -447,7 +447,7 @@ function SettingsRestoreView()
     if toolbar:IsOk() then toolbar:BestSize(screenw, besth or -1) end
 
     -- check if debugging panes are not mentioned and float them
-    for _, name in pairs({"stackpanel", "watchpanel"}) do
+    for _, name in pairs({"stackpanel"}) do
       local pane = uimgr:GetPane(name)
       if pane:IsOk() and not layout:find(name) then pane:Float() end
     end
