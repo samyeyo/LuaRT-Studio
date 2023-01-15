@@ -235,12 +235,12 @@ return {
   outline = {
     activateonclick = true,
     jumptocurrentfunction = true,
-    showanonymous = '<anonymous>',
+    showanonymous = 'function',
     showcompact = true,
     showcurrentfunction = true,
     showflat = false,
     showmethodindicator = true,
-    showonefile = false,
+    showonefile = true,
     sort = false
   },
   commandbar = {
@@ -338,8 +338,6 @@ return {
     ["CVS/"] = true,
     ["*.pyc"] = true,
     ["*.pyo"] = true,
-    ["*.exe"] = true,
-    ["*.dll"] = true,
     ["*.obj"] = true,
     ["*.o"] = true,
     ["*.a"] = true,
@@ -372,6 +370,8 @@ return {
     ["*.zip"] = true,
     ["*.gz"] = true,
     ["*.rar"] = true,
+    ["*.exe"] = true,
+    ["*.dll"] = true,
   },
   -- deprecated
   outputshell = {},
