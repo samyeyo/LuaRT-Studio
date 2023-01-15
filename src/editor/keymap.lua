@@ -35,8 +35,8 @@ ide.config.keymap = {
   [ID.OPEN]             = "Ctrl-O",
   [ID.CLOSE]            = "Ctrl-W",
   [ID.SAVE]             = "Ctrl-S",
-  [ID.SAVEAS]           = "Alt-Shift-S",
-  [ID.SAVEALL]          = "",
+  [ID.SAVEAS]           = "Ctrl-Shift-S",
+  [ID.SAVEALL]          = "Ctrl-Alt-S",
   [ID.RECENTFILES]      = "",
   [ID.RECENTFILESPREV]  = "Ctrl-,",
   [ID.RECENTFILESNEXT]  = "Ctrl-.",
@@ -52,7 +52,12 @@ ide.config.keymap = {
   [ID.SHOWTOOLTIP]      = "Ctrl-T",
   [ID.AUTOCOMPLETE]     = "Ctrl-K",
   [ID.AUTOCOMPLETEENABLE] = "",
+  [ID.COPYLINEUP]       = "Alt-Shift-UP",
+  [ID.COPYLINEDOWN]     = "Alt-Shift-DOWN",
+  [ID.MOVELINEUP]       = "Alt-UP",
+  [ID.MOVELINEDOWN]     = "Alt-DOWN",
   [ID.COMMENT]          = "Ctrl-U",
+  [ID.FORMAT]           = "Alt-F",
   [ID.FOLD]             = "F12",
   [ID.FOLDLINE]         = "Shift-F12",
   [ID.CLEARDYNAMICWORDS] = "",
@@ -77,8 +82,7 @@ ide.config.keymap = {
 -- View menu
   [ID.VIEWFILETREE]     = "Ctrl-Shift-P",
   [ID.VIEWOUTPUT]       = "Ctrl-Shift-O",
-  [ID.VIEWWATCHWINDOW]  = "Ctrl-Shift-W",
-  [ID.VIEWCALLSTACK]    = "Ctrl-Shift-S",
+  [ID.VIEWCALLSTACK]    = "",
   [ID.VIEWDEFAULTLAYOUT] = "",
   [ID.VIEWFULLSCREEN]   = "Ctrl-Shift-A",
   [ID.ZOOMRESET]        = "Ctrl-0",
@@ -108,10 +112,10 @@ ide.config.keymap = {
   [ID.PROJECTDIR]       = "",
 -- Help menu
   [ID.ABOUT]            = "F1",
--- Watch window menu items
+  -- Watch window menu items
   [ID.ADDWATCH]         = "Ins",
-  [ID.EDITWATCH]        = "F2",
-  [ID.DELETEWATCH]      = "Del",
+  [ID.EDITWATCH]        = "",
+  [ID.DELETEWATCH]      = "",
 -- Editor popup menu items
   [ID.GOTODEFINITION]   = "",
   [ID.RENAMEALLINSTANCES] = "",
