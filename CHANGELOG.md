@@ -1,5 +1,33 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.3.0 (Jan 15 2023)
+
+### Highlights & Improvements
+  - LuaRT toolchain updated to v1.3.0 
+  - Updated examples to LuaRT v1.3.0
+  - New integrated Lua code formatter/beautifier <kbd>Alt</kbd> + <kbd>F</kbd> (uses Stylua)
+  - New Variables pane shown during debugging that list all current scope variables
+  - New debugging view that shows Symbols and Variables pane during debugging
+  - New UTF8/UNICODE complete support in Output pane
+  - New LuaRT ``modules\`` folder autodetection
+  - New keyboard shortcut to copy line(s) down <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>&#8595;</kbd> and up <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>&#8593;</kbd>
+  - New keyboard shortcut to move line(s) down <kbd>Alt</kbd> + <kbd>&#8595;</kbd> and up <kbd>Alt</kbd> + <kbd>&#8593;</kbd>
+  - Updated "Local console" pane to "Lua interpreter" pane
+  - Updated "Remote console" pane to "Debugging console" pane
+  - Updated breakpoint color to a more consensual one (red !)
+  - Symbols pane now shows only symbols for the current opened file
+  - Project view now shows EXE and DLL files
+  - Removed Watch pane (replaced by the new Variables Pane)
+
+### Bugfixes
+  - Fixed Lua scripts cannot be executed in the IDE 
+  - Fixed "Show console when running option" has no effect
+  - Fixed document tab may contain more than one '*' after file change
+  - Fixed Symbols pane showing global variables multiple times
+  - Fixed Symbols pane showing a non transparent icon for anonymous functions
+  - Fixed Output pane don't support reading from console input 
+  - Fixed LuaRT Console output module breaking Output pane redirection 
+
 ## LuaRT Studio v1.2.1 (Dec 10 2022)
 
 ### Highlights & Improvements
