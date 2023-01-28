@@ -284,7 +284,7 @@ frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
       local projpath = (ide:GetProject() or ""):gsub("[\\/]$", "")
       local isinproject = string.find(docpath, projpath) or false
       local cmd = 'bin/wrtc.exe "'..docpath..(isinproject and '" "'..projpath..'"' or '"')
-      wx.wxExecute(cmd)
+      CommandLineRun(cmd,nil,true, nil, nil, nil, nil, true)
     end
   end)
 
