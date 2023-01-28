@@ -19,7 +19,7 @@ debugger.watchCtrl = nil -- the watch ctrl that shows watch information
 debugger.stackCtrl = nil -- the stack ctrl that shows stack information
 debugger.toggleview = {
   bottomnotebook = true, -- output/console is "on" by default
-  stackpanel = false, watchpanel = true, toolbar = false }
+  stackpanel = false, watchpanel = false, toolbar = false }
 debugger.needrefresh = {} -- track components that may need a refresh
 debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
@@ -1632,27 +1632,11 @@ local function debuggerCreateWatchWindow()
               return
             end
 
-            -- update cache in the parent
-            -- local parent = self:GetItemParent(item)
-            -- valuecache[parent:GetValue()][name] = res
-
             local params = debugger:GetDataOptions({maxlevel=1})
             -- now update all serialized values in the tree starting from the expanded item
             while item:IsOk() do
               local value = valuecache[item:GetValue()]
               local name = self:GetItemName(item)
---              local strval = fixUTF8(type(value) ~= "string" and tostring(value) or '"'..value..'"')--serialize(value, params))
---              local _type = strval:match("^(%w+):") or false
---              local image = false
---              if _type then
---                if type_img[_type:lower()] == nil then
---                  _type = globals_mod[_type] and "module" or "instance"
---                end
---                strval = " <"..strval..">"
---              else
---                _type = load("return type("..strval..")")()
---                strval = ' = '..strval
---              end
               self:SetItemText(item, name..strval)
               if _type and type_img[_type] ~= nil then
                 self:SetItemImage(item, type_img[_type])
@@ -1780,7 +1764,7 @@ local function debuggerCreateWatchWindow()
     ide:AddPanelDocked(ide.frame.bottomnotebook, watchCtrl, "watchpanel", "Variables", nil, false, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
   else
     ide:AddPanel(watchCtrl, "watchpanel", TR("Variables"), nil, ide:GetBitmap("DEBUG", "WATCH", wx.wxSize(iconsize, iconsize)))
-    ide:GetUIManager():GetPane("watchpanel"):MinSize(260, -1):Bottom():Dock():Layer(1):Position(2):BestSize(300, 200):Show()
+    ide:GetUIManager():GetPane("watchpanel"):MinSize(260, -1):Bottom():Dock():Layer(1):Position(2):BestSize(300, 200)
   end
 end
 
