@@ -45,8 +45,12 @@ return {
     end
 
     local cpath = os.getenv(envcpath)
-    local luart_path = ide.frame.bottomnotebook.shellbox.getvalue([[sys.registry.read('HKEY_CURRENT_USER', 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\LuaRT', 'InstallLocation', false) or '']])
-    wx.wxSetEnv(envcpath, cpath..";"..luart_path.."/modules/?.dll")
+    local luart_path = ide.frame.bottomnotebook.shellbox.getvalue([[sys.registry.read('HKEY_CURRENT_USER', 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\LuaRT', 'InstallLocation', false)]])
+    if #luart_path == 0 then
+        luart_path = ide:GetRootPath().."/../.."
+    end
+    cpath = cpath..";"..luart_path.."/modules/?.dll"
+
     if rundebug and cpath and not iscustom then
         -- prepend osclibs as the libraries may be needed for debugging,
         -- but only if no path.lua is set as it may conflict with system libs
