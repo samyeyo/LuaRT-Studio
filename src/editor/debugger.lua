@@ -28,7 +28,6 @@ end)()
 debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP", "VALUE-TABLE", "VALUE-FUNCTION", "VALUE-OBJECT", "VALUE-STRING", "VALUE-NUMBER", "VALUE-INSTANCE", "VALUE-MODULE", "VALUE-BOOL", "VALUE-PROPERTY")
 local type_img = { ["table"] = 3, ["Object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7, ['instance'] = 8, ['module'] = 1, ["boolean"] = 10, ["property"] = 11, ["nil"] = -1 }
 local image = { STACK = 0, LOCAL = 1, UPVALUE = 2, TABLE = 3, FUNCTION = 4, OBJECT = 5, STRING = 6, NUMBER = 7, INSTANCE = 8, MODULE = 9, BOOL = 10, PROPERTY = 11}
-local globals_mod = { ["io"] = true, ["os"] = true, ["sys"] = true, ["console"] = true, ["crypto"] = true, ["net"] = true, ["zip"] = true, ["ui"] = true}
 local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
@@ -92,11 +91,11 @@ function debugger:updateWatchesSync()
         local temp = valstr:gsub("%{.*}", "")
         local image
         local complex = false
-        local _type = valstr:match("%[%[(%w+)%: ")  
+        local _type = valstr:match("%[%[(%w+)%: ")
         if _type ~= nil then
           if _type == "table" then            
-            _type = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
-            if _type == nil then
+            local _, values, err = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            if values[1] == nil then
               image = "table"
               _type = image
             else
@@ -113,7 +112,7 @@ function debugger:updateWatchesSync()
             end
             complex = true
           else
-            _type = globals_mod[_type] and "module" or _type
+            _type = "module"
           end 
         else
           _type = debugger:evaluate("type("..valstr..")", {maxlevel = 1})
@@ -1681,10 +1680,8 @@ local function debuggerCreateWatchWindow()
             _type = getmetatable(value).__name
             image = "instance"
             complex = true
-          else
-            _type = globals_mod[_type] and "module" or _type
           end   
-	end         
+	      end         
         _type = _type ~= nil and _type:match('%w+') or _type
         local newval
         if complex then
