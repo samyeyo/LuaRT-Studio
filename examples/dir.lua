@@ -5,7 +5,7 @@
 local console = require "console"
 
 local function format_int(number)
-  local i, j, minus, int, fraction = tostring(number):wfind('([-]?)(%d+)([.]?%d*)')
+  local i, j, minus, int, fraction = tostring(number):ufind('([-]?)(%d+)([.]?%d*)')
   int = int:ureverse():gusub("(%d%d%d)", "%1 ")
   local result = minus .. int:ureverse():gsub("^,", "") .. fraction
   result = result:gusub("^%s+", "")
