@@ -92,11 +92,11 @@ function debugger:updateWatchesSync()
         local temp = valstr:gsub("%{.*}", "")
         local image
         local complex = false
-        local _type = valstr:match("%[%[(%w+)%: ")  
+        local _type = valstr:match("%[%[(%w+)%: ")
         if _type ~= nil then
           if _type == "table" then            
-            _type = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
-            if _type == nil then
+            local _, values, err = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            if values[1] == nil then
               image = "table"
               _type = image
             else
@@ -113,7 +113,7 @@ function debugger:updateWatchesSync()
             end
             complex = true
           else
-            _type = globals_mod[_type] and "module" or _type
+            _type = "module"
           end 
         else
           _type = debugger:evaluate("type("..valstr..")", {maxlevel = 1})
@@ -1681,10 +1681,8 @@ local function debuggerCreateWatchWindow()
             _type = getmetatable(value).__name
             image = "instance"
             complex = true
-          else
-            _type = globals_mod[_type] and "module" or _type
           end   
-	end         
+	      end         
         _type = _type ~= nil and _type:match('%w+') or _type
         local newval
         if complex then
