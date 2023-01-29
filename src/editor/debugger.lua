@@ -28,7 +28,6 @@ end)()
 debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP", "VALUE-TABLE", "VALUE-FUNCTION", "VALUE-OBJECT", "VALUE-STRING", "VALUE-NUMBER", "VALUE-INSTANCE", "VALUE-MODULE", "VALUE-BOOL", "VALUE-PROPERTY")
 local type_img = { ["table"] = 3, ["Object"] = 5, ["function"] = 4, ["string"] = 6, ["number"] = 7, ['instance'] = 8, ['module'] = 1, ["boolean"] = 10, ["property"] = 11, ["nil"] = -1 }
 local image = { STACK = 0, LOCAL = 1, UPVALUE = 2, TABLE = 3, FUNCTION = 4, OBJECT = 5, STRING = 6, NUMBER = 7, INSTANCE = 8, MODULE = 9, BOOL = 10, PROPERTY = 11}
-local globals_mod = { ["io"] = true, ["os"] = true, ["sys"] = true, ["console"] = true, ["crypto"] = true, ["net"] = true, ["zip"] = true, ["ui"] = true}
 local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
@@ -95,8 +94,8 @@ function debugger:updateWatchesSync()
         local _type = valstr:match("%[%[(%w+)%: ")
         if _type ~= nil then
           if _type == "table" then            
-            local _, values, err = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
-            if values[1] == nil then
+            _type = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            if _type == nil then
               image = "table"
               _type = image
             else
@@ -1698,13 +1697,13 @@ local function debuggerCreateWatchWindow()
         else
           newval = fixUTF8(name .. ' = '..serialize(value))
         end
-        if name:find("^property_get_") then
+        if type(name) == "string" and name:find("^property_get_") then
           newval = fixUTF8(name:gsub("^property_get_", "") .. ' = '..serialize(value):gsub("%-%-%[%[.-%]%]", ""))
           image = "property"
         end
         local item = watchCtrl:AppendItem(item_id, "", -1)
-        watchCtrl:SetItemValueIfExpandable(item, value, true)       
-        watchCtrl:SetItemText(item, newval)
+        watchCtrl:SetItemValueIfExpandable(item, value, true)     
+        watchCtrl:SetItemText(item, tostring(newval))
         image = image or _type or "nil"
         watchCtrl:SetItemImage(item, type_img[image])
         num = num + 1
