@@ -1,6 +1,6 @@
 # LuaRT Studio Changelog
 
-## LuaRT Studio v1.3.0 (Jan 15 2023)
+## LuaRT Studio v1.3.0 (Jan 28 2023)
 
 ### Highlights & Improvements
   - LuaRT toolchain updated to v1.3.0 
@@ -15,9 +15,11 @@
   - Updated "Local console" pane to "Lua interpreter" pane
   - Updated "Remote console" pane to "Debugging console" pane
   - Updated breakpoint color to a more consensual one (red !)
+  - Updated wrtc to show message in Output panel after compilation succeeded instead of showing a message box
   - Symbols pane now shows only symbols for the current opened file
   - Project view now shows EXE and DLL files
   - Removed Watch pane (replaced by the new Variables Pane)
+
 
 ### Bugfixes
   - Fixed Lua scripts cannot be executed in the IDE 
