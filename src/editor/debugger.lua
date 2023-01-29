@@ -94,8 +94,8 @@ function debugger:updateWatchesSync()
         local _type = valstr:match("%[%[(%w+)%: ")
         if _type ~= nil then
           if _type == "table" then            
-            local _, values, err = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
-            if values[1] == nil then
+            _type = debugger:evaluate("getmetatable("..expression..").__name", {maxlevel = 1})
+            if _type == nil then
               image = "table"
               _type = image
             else
@@ -1697,13 +1697,13 @@ local function debuggerCreateWatchWindow()
         else
           newval = fixUTF8(name .. ' = '..serialize(value))
         end
-        if name:find("^property_get_") then
+        if type(name) == "string" and name:find("^property_get_") then
           newval = fixUTF8(name:gsub("^property_get_", "") .. ' = '..serialize(value):gsub("%-%-%[%[.-%]%]", ""))
           image = "property"
         end
         local item = watchCtrl:AppendItem(item_id, "", -1)
-        watchCtrl:SetItemValueIfExpandable(item, value, true)       
-        watchCtrl:SetItemText(item, newval)
+        watchCtrl:SetItemValueIfExpandable(item, value, true)     
+        watchCtrl:SetItemText(item, tostring(newval))
         image = image or _type or "nil"
         watchCtrl:SetItemImage(item, type_img[image])
         num = num + 1
