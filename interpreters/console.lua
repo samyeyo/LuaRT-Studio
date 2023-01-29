@@ -49,8 +49,8 @@ return {
     if #luart_path == 0 then
         luart_path = ide:GetRootPath().."/../.."
     end
-    -- wx.wxSetEnv(envcpath, cpath..";"..luart_path.."/modules/?.dll")
     cpath = cpath..";"..luart_path.."/modules/?.dll"
+
     if rundebug and cpath and not iscustom then
         -- prepend osclibs as the libraries may be needed for debugging,
         -- but only if no path.lua is set as it may conflict with system libs
