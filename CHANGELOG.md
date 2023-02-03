@@ -1,5 +1,10 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.3.1 Bugfix (Feb 04 2023)
+- Updated LuaRT toolchain to v1.3.1
+- Fixed running script fails due to spaces in path (Fixes #13) 
+- Fixed running with arguments fails (Fixes #14)
+
 ## LuaRT Studio v1.3.0 (Jan 28 2023)
 
 ### Highlights & Improvements
