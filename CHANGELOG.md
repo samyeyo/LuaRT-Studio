@@ -1,5 +1,9 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.3.2 Bugfix (Feb 19 2023)
+- Updated LuaRT toolchain to v1.3.2
+- Fixed `print()` function prints only first argument in Lua interpreter panel 
+
 ## LuaRT Studio v1.3.1 Bugfix (Feb 04 2023)
 - Updated LuaRT toolchain to v1.3.1
 - Fixed running script fails due to spaces in path (Fixes #13) 
