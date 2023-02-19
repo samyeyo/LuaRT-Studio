@@ -325,7 +325,15 @@ local function lua_getstring(idx)
 	return str
 end
 
-lua54.lua_pushcclosure(L, function (l) shellPrint(OUTPUT_MARKER, "\t"..lua_getstring(1), true) return 0 end, 0)
+lua54.lua_pushcclosure(L, function (l)
+  local n = tonumber(lua54.lua_gettop(L));
+  local result = ""
+  for i = 1, n do
+    result = result.."\t"..lua_getstring(i)
+  end
+  shellPrint(OUTPUT_MARKER, result, true)
+  return 0
+end, 0)
 lua54.lua_setglobal(L, "print")
 
 local function loadchunk(str) 
