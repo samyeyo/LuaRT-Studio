@@ -51,6 +51,7 @@ The IDE can be **installed into and run from any directory**. There are three op
 ## Documentation
 
 * No specific documentation available for now, as most of the original ZeroBrane Studio documentation should apply for LuaRT Studio.
+* This video shows you how to start with the IDE : [LuaRT Studio - Installation and first steps]()
 
 ## Usage
 
