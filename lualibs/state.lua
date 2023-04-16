@@ -1,4 +1,4 @@
-  --lua.h lauxlib.h lualib.h from Lua 5.4.4 (defines made enums, macros removed)
+  --lua.h lauxlib.h lualib.h from Lua 5.4.5 (defines made enums, macros removed)
 local ffi = require'ffi'
 ffi.cdef[[
 

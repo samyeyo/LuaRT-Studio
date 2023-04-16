@@ -538,7 +538,7 @@ function ShellExecuteCode(code, ismacro)
 end
 
 local function displayShellIntro()
-  DisplayShellMsg(TR("Welcome to the interactive Lua 5.4.4 "..console.getvalue("_ARCH").." interpreter").."\n"
+  DisplayShellMsg(TR("Welcome to the interactive Lua 5.4.5 "..console.getvalue("_ARCH").." interpreter").."\n"
     ..TR("Use 'help' to display the local console help.").."\n")
   DisplayShellPrompt('')
 end
