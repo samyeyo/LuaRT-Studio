@@ -51,7 +51,7 @@ return {
     if #luart_path == 0 then
         luart_path = ide:GetRootPath().."/../.."
     end
-    cpath = cpath..";"..luart_path.."/modules/?.dll"
+    cpath = cpath..";"..luart_path.."/modules/?/?.dll"
 
     if rundebug and cpath and not iscustom then
         -- prepend osclibs as the libraries may be needed for debugging,
