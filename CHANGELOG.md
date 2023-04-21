@@ -1,5 +1,10 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.4.0 (Apr 21 2023)
+- Updated LuaRT toolchain to v1.4.0
+- Updated `examples\` folder, now sorted by modules
+- New `modules\` folder, with LuaRT binary modules
+
 ## LuaRT Studio v1.3.2 Bugfix (Feb 19 2023)
 - Updated LuaRT toolchain to v1.3.2
 - Fixed `print()` function prints only first argument in Lua interpreter panel 
