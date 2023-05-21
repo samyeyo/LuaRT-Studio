@@ -362,8 +362,8 @@ function ide:MakeMenu(t)
         else
           local item = wx.wxMenuItem(menu, id, label, help or "", kind or wx.wxITEM_NORMAL)
           if menuicon and type(iconmap[id]) == "table" and item:GetKind() == wx.wxITEM_NORMAL then
-            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR",
-              wx.wxSize(16*ide:GetContentScaleFactor(), 16*ide:GetContentScaleFactor()))
+            local size = 16*ide:GetContentScaleFactor() <= 16 and 16 or 24
+            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR", wx.wxSize(size, size))
             item:SetBitmap(bitmap)
           end
           menu:Append(item)
