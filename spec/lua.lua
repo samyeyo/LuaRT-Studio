@@ -263,7 +263,7 @@ return {
       select setfenv setmetatable tonumber tostring type unpack xpcall]],
 
     -- library functions
-    [[Object sys.Buffer sys.COM sys.File sys.Directory sys.registry sys.env sys.Pipe sys.Datetime sys.clock sys.exit sys.sleep sys.cmd sys.halt
+    [[Object sys.Buffer sys.COM sys.File sys.Directory sys.registry sys.env sys.Pipe sys.Datetime sys.clock sys.exit sleep sys.cmd sys.halt
       sys.tempfile sys.error sys.currentdir sys.clipboard zip.isvalid zip.Zip
       coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield
       coroutine.isyieldable coroutine.close
