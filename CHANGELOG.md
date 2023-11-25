@@ -1,5 +1,13 @@
 # LuaRT Studio Changelog
 
+## LuaRT Studio v1.6.0 (Nov 26 2023)
+- Updated: LuaRT Studio is now using the LuaRT 1.6.0 toolchain
+- New: New `Check for LuaRT update` command in `File` menu
+- New: New toolbar icon for the "Analyze" command
+- Updated: `Help` menu now contains links related to LuaRT webiste
+- Fixed: Debugging a script that contains a call to the `Task:wait()` method won't crash the program anymore (Fixes #20)
+- Fixed: Clicking on the "stop" button will now really stop the running program (Fixes #19)
+
 ## LuaRT Studio v1.4.0 (Apr 21 2023)
 - Updated LuaRT toolchain to v1.4.0
 - Updated `examples\` folder, now sorted by modules

@@ -300,10 +300,10 @@ end
 local frame = ide.frame
 
 -- insert after "Compile" item
-local _, menu, compilepos = ide:FindMenuItem(ID.COMPILE)
-if compilepos then
-  menu:Insert(compilepos+1, ID.ANALYZE, TR("Analyze")..KSC(ID.ANALYZE), TR("Analyze the source code"))
-end
+-- local _, menu, compilepos = ide:FindMenuItem(ID.COMPILE)
+-- if compilepos then
+--   menu:Insert(compilepos+1, ID.ANALYZE, TR("Analyze")..KSC(ID.ANALYZE), TR("Analyze the source code"))
+-- end
 
 local function analyzeProgram(editor)
   -- save all files (if requested) for "infervalue" analysis to keep the changes on disk

@@ -37,7 +37,6 @@ return {
         params = params:gsub("[^%s]+", function(param) return '\\"'..param..'\\"' end)
     end
     local cmd = '"'..exe..'" -e "sys.cmd(\'\\"\\"'..exe:gsub("\\", "/")..'\\" \\"'..(filepath):gsub("\\", "/")..'\\" '..(params and '\\" '..params or '')..[[', false)"]]
-    
     local envcpath = "LUA_CPATH"
     local envlpath = "LUA_PATH"
     if version then
