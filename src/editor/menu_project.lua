@@ -18,6 +18,7 @@ local targetMenu = ide:MakeMenu {}
 local debugMenu = ide:MakeMenu {
   { ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file") },
   { ID_COMPILE, TR("&Compile to executable...")..KSC(ID_COMPILE), TR("Compile the current file to executable") },
+  { ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code") },
   { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
   { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
   { },

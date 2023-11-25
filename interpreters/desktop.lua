@@ -37,7 +37,6 @@ return {
         params = params:gsub("[^%s]+", function(param) return '\\"'..param..'\\"' end)
     end
     local cmd = '"'..exe..'" -e "sys.cmd(\'\\"\\"'..exe:gsub("\\", "/")..'\\" \\"'..(filepath):gsub("\\", "/")..'\\" '..(params and '\\" '..params or '')..[[', false)"]]
-    
     local envcpath = "LUA_CPATH"
     local envlpath = "LUA_PATH"
     if version then
@@ -51,7 +50,7 @@ return {
     if #luart_path == 0 then
         luart_path = ide:GetRootPath().."/../.."
     end
-    cpath = cpath..";"..luart_path.."/modules/?.dll"
+    cpath = cpath..";"..luart_path.."/modules/?/?.dll"
 
     if rundebug and cpath and not iscustom then
         -- prepend osclibs as the libraries may be needed for debugging,

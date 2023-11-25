@@ -10,24 +10,21 @@ local menuBar = frame.menuBar
 local mobdebug = require "mobdebug"
 
 local product = ide:GetProperty("help", "zerobranestudio")
-local url = "http://zerobrane.com/r/"..product.."-"
 local urls = {
-  [ID_HELPPROJECT] = "main",
-  [ID_HELPDOCUMENTATION] =  "documentation",
-  [ID_HELPGETTINGSTARTED] = "gettingstarted",
-  [ID_HELPTUTORIALS] = "tutorials",
-  [ID_HELPFAQ] = "faq",
-  [ID_HELPCOMMUNITY] = "community",
+  [ID_HELPPROJECT] = "https://luart.org/index.html",
+  [ID_HELPDOCUMENTATION] =  "https://luart.org/doc/modules.html",
+  [ID_HELPGETTINGSTARTED] = "https://luart.org/doc/tour.html",
+  [ID_HELPTUTORIALS] = "https://luart.org/doc/tutorial/index.html",
+  [ID_HELPCOMMUNITY] = "https://community.luart.org/",
 }
 
 local helpMenu = ide:MakeMenu {
   { ID_ABOUT, TR("&About")..KSC(ID_ABOUT), TR("About %s"):format(ide:GetProperty("editor")) },
   { ID_HELPPROJECT, TR("&Project Page")..KSC(ID_HELPPROJECT) },
-  { ID_HELPDOCUMENTATION, TR("&Documentation")..KSC(ID_HELPDOCUMENTATION) },
-  { ID_HELPGETTINGSTARTED, TR("&Getting Started Guide")..KSC(ID_HELPGETTINGSTARTED) },
+  { ID_HELPDOCUMENTATION, TR("&Modules documentation")..KSC(ID_HELPDOCUMENTATION) },
+  { ID_HELPGETTINGSTARTED, TR("&Getting Started")..KSC(ID_HELPGETTINGSTARTED) },
   { ID_HELPTUTORIALS, TR("&Tutorials")..KSC(ID_HELPTUTORIALS) },
-  { ID_HELPFAQ, TR("&Frequently Asked Questions")..KSC(ID_HELPFAQ) },
-  { ID_HELPCOMMUNITY, TR("&Community")..KSC(ID_HELPCOMMUNITY) },
+  { ID_HELPCOMMUNITY, TR("LuaRT &Community")..KSC(ID_HELPCOMMUNITY) },
 }
 -- do not translate Help menu on Mac as it won't merge with "standard" menus
 menuBar:Append(helpMenu, ide.osname == 'Macintosh' and "&Help" or TR("&Help"))
@@ -126,5 +123,5 @@ end
 frame:Connect(ID_ABOUT, wx.wxEVT_COMMAND_MENU_SELECTED, displayAbout)
 for item, page in pairs(urls) do
   frame:Connect(item, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function() wx.wxLaunchDefaultBrowser(url..page, 0) end)
+    function() wx.wxLaunchDefaultBrowser(page, 0) end)
 end

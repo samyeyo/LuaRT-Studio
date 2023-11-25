@@ -12,7 +12,7 @@ ide.config.toolbar.icons = {
   ID.RUN, ID.STARTDEBUG, ID.STOPDEBUG, ID.DETACHDEBUG, ID.BREAK,
   ID.COMPILE, ID.STEP, ID.STEPOVER, ID.STEPOUT, ID.RUNTO,
   ID.SEPARATOR,
-  ID.BREAKPOINTTOGGLE, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, [ID.FINDINFILES] = false,
+  ID.BREAKPOINTTOGGLE, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, ID.SEPARATOR, ID.ANALYZE, [ID.FINDINFILES] = false,
   [ID.COMPILE] = false,
 }
 
@@ -28,7 +28,6 @@ ide.config.toolbar.iconmap = {
   [ID.FINDINFILES] = {"FIND-IN-FILES", TR("Find in files")},
   [ID.COMPILE] = {"COMPILE", TR("Compile the current file")},
   [ID.RUN] = {"RUN", TR("Execute the current project/file")},
-  -- [ID.RUNNOW] = {"RUN-NOW", TR("Run as Scratchpad")},
   [ID.STARTDEBUG] = {"DEBUG-START", TR("Start or continue debugging")},
   [ID.STOPDEBUG] = {"DEBUG-STOP", TR("Stop the currently running process")},
   [ID.DETACHDEBUG]= {"DEBUG-DETACH", TR("Stop debugging and continue running the process")},
@@ -41,6 +40,7 @@ ide.config.toolbar.iconmap = {
   [ID.BOOKMARKTOGGLE] = {"BOOKMARK-TOGGLE", TR("Toggle bookmark")},
   [ID.VIEWCALLSTACK] = {"DEBUG-CALLSTACK", TR("View the stack window")},
   [ID.VIEWWATCHWINDOW] = {"DEBUG-WATCH", TR("View the watch window")},
+  [ID.ANALYZE] = {"ANALYZE", TR("Analyze the source code")},
   -- search toolbar
   [ID.FINDNEXT] = {"FIND-NEXT", TR("Find next")},
   [ID.FINDREPLACENEXT] = {"FIND-REPLACE-NEXT", TR("Replace next instance")},

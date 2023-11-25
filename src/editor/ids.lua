@@ -39,6 +39,7 @@ ID_RECENTPROJECTSCLEAR = NewID()
 ID_RECENTPROJECTSPREV = NewID()
 ID_PRINT            = NewID()
 ID_PAGESETUP        = NewID()
+ID_UPDATE           = NewID()
 ID_EXIT             = linux and NewID() or wx.wxID_EXIT
 ID_RESTART          = NewID()
 -- Edit menu

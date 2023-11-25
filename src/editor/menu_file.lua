@@ -15,7 +15,8 @@ local projecthistorymenu = ide:MakeMenu {
   { },
   { ID_RECENTPROJECTSCLEAR, TR("Clear Items")..KSC(ID_RECENTPROJECTSCLEAR), TR("Clear items from this list") },
 }
-local fileMenu = ide:MakeMenu {
+
+local fmenu = {
   { ID_NEW, TR("&New")..KSC(ID_NEW), TR("Create an empty document") },
   { ID_OPEN, TR("&Open...")..KSC(ID_OPEN), TR("Open an existing document") },
   { ID_CLOSE, TR("&Close Page")..KSC(ID_CLOSE), TR("Close the current editor window") },
@@ -26,9 +27,17 @@ local fileMenu = ide:MakeMenu {
   { },
   { ID_RECENTFILES, TR("Recent Files")..KSC(ID_RECENTFILES), TR("File history"), filehistorymenu },
   { ID_RECENTPROJECTS, TR("Recent Projects")..KSC(ID_RECENTPROJECTS), TR("Project history"), projecthistorymenu },
-  { },
-  { ID_EXIT, TR("E&xit")..KSC(ID_EXIT), TR("Exit program") },
 }
+
+fmenu[#fmenu+1] =   { }
+if wx.wxFileExists("bin\\rtcheck.exe") then
+  fmenu[#fmenu+1] =   { ID_UPDATE, TR("Check for LuaRT &update"), TR("Check if a LuaRT &update is available")}
+  fmenu[#fmenu+1] =   { }
+end
+fmenu[#fmenu+1] =   { ID_EXIT, TR("E&xit")..KSC(ID_EXIT), TR("Exit program") }
+
+local fileMenu = ide:MakeMenu(fmenu)
+
 menuBar:Append(fileMenu, TR("&File"))
 
 do -- recent file history
@@ -231,6 +240,11 @@ frame:Connect(ID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     frame:Close() -- this will trigger wxEVT_CLOSE_WINDOW
   end)
+
+frame:Connect(ID_UPDATE, wx.wxEVT_COMMAND_MENU_SELECTED,
+function (event)
+  wx.wxExecute('bin/rtcheck.exe', wx.wxEXEC_ASYNC)
+end)
 
 frame:Connect(ID_RESTART, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) ide:Restart(true) end)
