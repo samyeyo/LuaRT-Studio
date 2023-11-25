@@ -30,7 +30,7 @@ local fmenu = {
 }
 
 fmenu[#fmenu+1] =   { }
-if wx.wxFileExists("bin\\update.exe") then
+if wx.wxFileExists("bin\\rtcheck.exe") then
   fmenu[#fmenu+1] =   { ID_UPDATE, TR("Check for LuaRT &update"), TR("Check if a LuaRT &update is available")}
   fmenu[#fmenu+1] =   { }
 end
@@ -243,7 +243,7 @@ frame:Connect(ID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED,
 
 frame:Connect(ID_UPDATE, wx.wxEVT_COMMAND_MENU_SELECTED,
 function (event)
-  wx.wxExecute('bin/update.exe', wx.wxEXEC_ASYNC)
+  wx.wxExecute('bin/rtcheck.exe', wx.wxEXEC_ASYNC)
 end)
 
 frame:Connect(ID_RESTART, wx.wxEVT_COMMAND_MENU_SELECTED,
