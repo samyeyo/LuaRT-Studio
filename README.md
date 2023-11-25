@@ -2,7 +2,7 @@
 
 [![Title][title]](https://studio.luart.org/)
 
-[![Lua VM 5.4.5](https://badgen.net/badge/Lua%20VM/5.4.5/yellow)](https://www.lua.org/)
+[![Lua VM 5.4.5](https://badgen.net/badge/Lua%20VM/5.4.6/yellow)](https://www.lua.org/)
 ![Windows](https://badgen.net/badge/Windows/Vista%20and%20later/blue?icon=windows)
 [![LuaRT Studio license](https://badgen.net/badge/License/MIT/green)](#license)
 [![Twitter Follow](https://img.shields.io/twitter/follow/__LuaRT__?style=social)](https://www.twitter.com/__LuaRT__)
@@ -21,22 +21,24 @@
 
 ## Features
 
-LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, based on the LuaRT interpreter. LuaRT Studio can also be used to develop standard Lua applications based on latest Lua 5.4.5 VM seamlessly.
+LuaRT Studio is a Windows IDE to develop Lua desktop or console applications, based on the LuaRT interpreter. LuaRT Studio can also be used to develop standard Lua applications based on latest Lua 5.4.6 VM seamlessly.
 
-* Small and portable Lua 5.4.5 IDE for Windows for x86 and x64
+* Small and portable Lua 5.4.6 IDE for Windows for x86 and x64
 * Based on ZeroBrane Studio, from Paul Kulchenko 
 * Bundled with a specific LuaRT interpreter, compatible with standard Lua
 * Automatic switch between Lua console or desktop application based on file extension (.lua and .wlua respectively)
 * Updated UI, using current Windows UI theme, icons for files, tabs, and panels.
 * Rework of the "Outline" tab, now called "Symbols" (displays local and global variables, new icons, table expansion...)
-* Icons for Watch panel, Stack panel and a new Symbol tab
+* Icons Stack panel and a new Symbol tab
+* New Variable panel, that shows during debugging session
 * Support for using ttf font files
+* New Stylua 0.15.3 linter
 * LuaCheck updated to 0.26
 * LuaSec updated to 1.2.0
 * LuaSocket updated to 3.0-rc1
-* Updated mobdebug to support LuaRT objects.
+* Updated mobdebug to support LuaRT objects and Tasks
 * New project option to Show/Hide console window.
-* Local Lua 5.4.5 console 
+* Local Lua 5.4.6 console 
 
 ## Installation
 
